@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f0f">
+<title>Training Log</title>
+<style>
+  :root {
+    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #2e2e2e;
+    --accent: #e8ff47; --accent2: #47b8ff; --text: #f0f0f0; --text2: #888;
+    --danger: #ff4747; --success: #47ff8a; --warn: #ff9f47;
+    --radius: 10px; --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 16px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-week { font-size: 12px; color: var(--accent); font-weight: 600; background: rgba(232,255,71,0.12); padding: 3px 9px; border-radius: 20px; }
+
+  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; position: sticky; top: 53px; z-index: 99; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: none; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+
+  .session-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--surface2); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; border: 1px solid var(--border); }
+  .session-name { font-size: 15px; font-weight: 700; }
+  .session-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .session-done { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; flex-shrink: 0; }
+  .session-done.checked { background: var(--success); border-color: var(--success); color: #000; }
+
+  .info-pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; color: var(--accent2); border: 1px solid rgba(71,184,255,0.3); background: rgba(71,184,255,0.08); margin-bottom: 10px; }
+
+  .exercise-block { background: var(--surface2); border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--border); }
+  .ex-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .ex-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); background: transparent; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; margin-top: 1px; }
+  .ex-check.checked { background: var(--accent); border-color: var(--accent); }
+  .ex-check.checked::after { content: '✓'; font-size: 13px; font-weight: 800; color: #000; }
+  .ex-info { flex: 1; }
+  .ex-name { font-size: 14px; font-weight: 700; }
+  .ex-prescribed { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .ex-rest { font-size: 11px; font-weight: 600; color: var(--warn); margin-top: 4px; }
+
+  .ex-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-label { font-size: 10px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+  .field-input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--font); padding: 7px 9px; width: 100%; outline: none; transition: border-color 0.15s; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input.rpe:focus { border-color: var(--accent2); }
+  textarea.field-input { min-height: 52px; resize: none; font-size: 13px; }
+
+  .vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .vital-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+  .vital-label { font-size: 10px; color: var(--text2); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; }
+  .vital-scale { display: flex; gap: 4px; }
+  .scale-btn { flex: 1; height: 28px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+  .scale-btn.active-energy { background: var(--accent); border-color: var(--accent); color: #000; }
+  .scale-btn.active-sleep { background: var(--accent2); border-color: var(--accent2); color: #000; }
+  .scale-btn.active-stress { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .scale-btn.active-rpe { background: var(--warn); border-color: var(--warn); color: #000; }
+
+  .pain-toggle { display: flex; gap: 8px; margin-top: 8px; }
+  .toggle-btn { flex: 1; padding: 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .toggle-btn.active-no { background: var(--success); border-color: var(--success); color: #000; }
+  .toggle-btn.active-yes { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: var(--radius); border: none; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: all 0.15s; margin-top: 10px; }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger { background: rgba(255,71,71,0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+  .report-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; font-size: 12px; line-height: 1.6; font-family: 'SF Mono','Fira Code',monospace; white-space: pre-wrap; word-break: break-word; color: #b0ffb0; margin-top: 10px; max-height: 400px; overflow-y: auto; }
+
+  .week-config { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .week-config label { font-size: 13px; color: var(--text2); font-weight: 600; flex-shrink: 0; }
+  .week-config input { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-size: 13px; padding: 7px 10px; flex: 1; font-family: var(--font); outline: none; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; padding: 8px 0 env(safe-area-inset-bottom,8px); z-index: 200; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; cursor: pointer; color: var(--text2); font-size: 10px; font-weight: 600; transition: color 0.15s; }
+  .nav-item.active { color: var(--accent); }
+  .nav-icon { font-size: 20px; }
+
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 18px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .sep { height: 1px; background: var(--border); margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🏋 Training Log</div>
+  <div class="header-week" id="weekBadge">W—</div>
+</div>
+
+<div class="tabs" id="tabBar"></div>
+<div id="pagesContainer"></div>
+
+<!-- REPORT PAGE -->
+<div class="page" id="page-report">
+  <div class="card">
+    <div class="card-title">📤 Report Settimanale</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">Genera il report da copiare e incollare in chat col coach ogni domenica.</p>
+    <button class="btn btn-primary" onclick="generateReport()">⚡ Genera Report</button>
+    <div id="reportOutput"></div>
+    <button class="btn btn-secondary" id="copyBtn" style="display:none" onclick="copyReport()">📋 Copia Report</button>
+  </div>
+  <div class="card">
+    <div class="card-title">⚙️ Dati Settimana</div>
+    <div class="week-config"><label>Settimana #</label><input type="number" id="weekNum" min="1" max="52" value="1" oninput="saveConfig()"></div>
+    <div class="week-config"><label>Nome</label><input type="text" id="userName" placeholder="Il tuo nome" oninput="saveConfig()"></div>
+    <div class="week-config"><label>Obiettivo</label><input type="text" id="userGoal" placeholder="es. Front lever + massa" oninput="saveConfig()"></div>
+    <div class="sep"></div>
+    <button class="btn btn-danger" onclick="clearWeekData()">🗑 Azzera dati settimana</button>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="showNav('train')" id="nav-train"><div class="nav-icon">💪</div><span>Allenamento</span></div>
+  <div class="nav-item" onclick="showNav('report')" id="nav-report"><div class="nav-icon">📊</div><span>Report</span></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let config = { weekNum:1, userName:'', userGoal:'' };
+let sessions = [];
+let logs = {};
+const STORAGE_KEY = 'fitness_log_v3';
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify({config,sessions,logs})); }
+function load() {
+  try { const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.config)config=d.config; if(d.sessions)sessions=d.sessions; if(d.logs)logs=d.logs; } catch(e){}
+  document.getElementById('weekNum').value=config.weekNum||1;
+  document.getElementById('userName').value=config.userName||'';
+  document.getElementById('userGoal').value=config.userGoal||'';
+  document.getElementById('weekBadge').textContent='W'+(config.weekNum||'—');
+}
+function saveConfig() {
+  config.weekNum=parseInt(document.getElementById('weekNum').value)||1;
+  config.userName=document.getElementById('userName').value;
+  config.userGoal=document.getElementById('userGoal').value;
+  document.getElementById('weekBadge').textContent='W'+config.weekNum;
+  save();
+}
+function uid() { return '_'+Math.random().toString(36).slice(2,9); }
+function esc(s) { if(s==null)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+function buildTrainingPages() {
+  const tabBar=document.getElementById('tabBar');
+  const container=document.getElementById('pagesContainer');
+  tabBar.querySelectorAll('.tab[data-sid]').forEach(t=>t.remove());
+  container.querySelectorAll('.page[data-sid]').forEach(p=>p.remove());
+  if (!sessions.length) {
+    if (!document.getElementById('page-train-empty')) {
+      const empty=document.createElement('div'); empty.className='page active'; empty.id='page-train-empty';
+      empty.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:10px">📋</div><div style="font-size:14px;line-height:1.5">Piano non ancora caricato.<br>Il coach genererà questo file con il tuo piano personalizzato.</div></div>`;
+      container.insertBefore(empty,container.firstChild);
+    }
+    return;
+  }
+  document.getElementById('page-train-empty')?.remove();
+
+  sessions.forEach((s,si)=>{
+    if (!logs[s.id]) logs[s.id]={done:false,exLogs:{},vitals:{},pain:null,painNote:'',sessionNote:''};
+    (s.exercises||[]).forEach(ex=>{ if(!logs[s.id].exLogs[ex.id]) logs[s.id].exLogs[ex.id]={done:false,done_val:'',rpe:'',note:''}; });
+
+    const tab=document.createElement('div'); tab.className='tab'; tab.dataset.sid=s.id;
+    tab.textContent=(s.day?s.day+' · ':'')+( s.name||'S'+(si+1));
+    tab.onclick=()=>showNav('sess-'+s.id);
+    tabBar.appendChild(tab);
+
+    const page=document.createElement('div'); page.className='page'; page.id='page-sess-'+s.id; page.dataset.sid=s.id;
+    const log=logs[s.id];
+    page.innerHTML=`
+      <div class="session-header" onclick="toggleSessionDone('${s.id}')">
+        <div><div class="session-name">${esc(s.name||'Sessione '+(si+1))}</div>
+        <div class="session-meta">${s.day?esc(s.day)+' · ':''}W${config.weekNum}</div></div>
+        <div class="session-done ${log.done?'checked':''}" id="sdone-${s.id}">${log.done?'✓':''}</div>
+      </div>
+      ${s.duration?`<div class="info-pill">⏱ Durata stimata: ~${esc(s.duration)} min</div>`:''}
+      <div class="card"><div class="card-title">Esercizi</div>${(s.exercises||[]).map(ex=>renderEx(s.id,ex)).join('')}</div>
+      <div class="card"><div class="card-title">Parametri Sessione</div>
+        <div class="vitals-grid">
+          ${renderScale(s.id,'energy','⚡ Energia pre','energy')}
+          ${renderScale(s.id,'sleep','😴 Sonno','sleep')}
+          ${renderScale(s.id,'stress','🧠 Stress','stress')}
+          ${renderScale(s.id,'rpe','🎯 RPE sessione','rpe')}
+        </div>
+        <div style="margin-top:10px"><div class="field-label" style="margin-bottom:5px">⚖️ Peso corporeo (kg)</div>
+        <input class="field-input" type="number" step="0.1" placeholder="es. 84.5" value="${esc(log.vitals?.weight||'')}" oninput="setVital('${s.id}','weight',this.value)"></div>
+      </div>
+      <div class="card"><div class="card-title">🩹 Dolori / Fastidi</div>
+        <div class="pain-toggle">
+          <div class="toggle-btn ${log.pain===false?'active-no':''}" onclick="setPain('${s.id}',false)">✓ Nessuno</div>
+          <div class="toggle-btn ${log.pain===true?'active-yes':''}" onclick="setPain('${s.id}',true)">⚠️ Sì</div>
+        </div>
+        <div id="painDetail-${s.id}" style="margin-top:8px;${log.pain?'':'display:none'}">
+          <input class="field-input" placeholder="Zona e tipo di fastidio..." value="${esc(log.painNote||'')}" oninput="setLog('${s.id}','painNote',this.value)">
+        </div>
+      </div>
+      <div class="card"><div class="card-title">📝 Note Sessione</div>
+        <textarea class="field-input" placeholder="Come è andata? Dubbi, osservazioni..." oninput="setLog('${s.id}','sessionNote',this.value)">${esc(log.sessionNote||'')}</textarea>
+      </div>`;
+    container.appendChild(page);
+  });
+}
+
+function renderEx(sid,ex) {
+  const el=logs[sid]?.exLogs?.[ex.id]||{};
+
+  // Mobility type — simplified: checkbox + notes only
+  if(ex.type==='mobility') {
+    return `<div class="exercise-block" style="border-color:rgba(71,184,255,0.25);background:rgba(71,184,255,0.05)">
+      <div class="ex-header">
+        <div class="ex-check ${el.done?'checked':''}" id="excheck-${sid}-${ex.id}" onclick="toggleExDone('${sid}','${ex.id}')" style="border-color:var(--accent2)"></div>
+        <div class="ex-info">
+          <div class="ex-name" style="color:var(--accent2)">${esc(ex.name)}</div>
+          <div class="ex-prescribed">${esc(ex.prescribed)}</div>
+        </div>
+      </div>
+      <div class="field-group" style="margin-top:8px">
+        <div class="field-label">Note mobilità</div>
+        <input class="field-input" placeholder="come è andata? miglioramento, rigidità, dolori..." value="${esc(el.note||'')}" oninput="setExLog('${sid}','${ex.id}','note',this.value)">
+      </div>
+    </div>`;
+  }
+
+  const isTime=ex.type==='time', isDist=ex.type==='dist';
+  const doneLabel=isTime?'Fatto (s)':isDist?'Fatto (m)':'Fatto';
+  const ph=isTime?'es. 12s':isDist?'es. 200m':'es. 4×8 +12kg';
+  return `<div class="exercise-block">
+    <div class="ex-header">
+      <div class="ex-check ${el.done?'checked':''}" id="excheck-${sid}-${ex.id}" onclick="toggleExDone('${sid}','${ex.id}')"></div>
+      <div class="ex-info">
+        <div class="ex-name">${esc(ex.name)}</div>
+        <div class="ex-prescribed">${esc(ex.prescribed)}</div>
+        ${ex.restLabel?`<div class="ex-rest">⏸ Pausa: ${esc(ex.restLabel)}</div>`:''}
+      </div>
+    </div>
+    <div class="ex-fields">
+      <div class="field-group"><div class="field-label">${doneLabel}</div>
+        <input class="field-input" placeholder="${ph}" value="${esc(el.done_val||'')}" oninput="setExLog('${sid}','${ex.id}','done_val',this.value)"></div>
+      <div class="field-group"><div class="field-label">RPE</div>
+        <input class="field-input rpe" type="number" min="1" max="10" placeholder="1–10" value="${esc(el.rpe||'')}" oninput="setExLog('${sid}','${ex.id}','rpe',this.value)"></div>
+      <div class="field-group"><div class="field-label">Variazione</div>
+        <input class="field-input" placeholder="diverso dalla scheda..." value="${esc(el.note||'')}" oninput="setExLog('${sid}','${ex.id}','note',this.value)"></div>
+    </div>
+  </div>`;
+}
+
+function renderScale(sid,key,label,type) {
+  const val=logs[sid]?.vitals?.[key]||null;
+  const btns=[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="scale-btn ${val==n?'active-'+type:''}" onclick="setVital('${sid}','${key}',${n},'${type}')">${n}</div>`).join('');
+  return `<div class="vital-block"><div class="vital-label">${label}</div><div class="vital-scale" id="scale_${sid}_${key}">${btns}</div></div>`;
+}
+
+function toggleSessionDone(sid) { logs[sid].done=!logs[sid].done; const el=document.getElementById('sdone-'+sid); el.classList.toggle('checked',logs[sid].done); el.textContent=logs[sid].done?'✓':''; save(); }
+function toggleExDone(sid,exid) { logs[sid].exLogs[exid].done=!logs[sid].exLogs[exid].done; document.getElementById(`excheck-${sid}-${exid}`).classList.toggle('checked',logs[sid].exLogs[exid].done); save(); }
+function setExLog(sid,exid,key,val) { logs[sid].exLogs[exid][key]=val; save(); }
+function setLog(sid,key,val) { logs[sid][key]=val; save(); }
+function setVital(sid,key,val,type) {
+  if(!logs[sid].vitals)logs[sid].vitals={};
+  logs[sid].vitals[key]=val;
+  const scaleEl=document.getElementById('scale_'+sid+'_'+key);
+  if(scaleEl){
+    scaleEl.querySelectorAll('.scale-btn').forEach((btn,i)=>{
+      btn.className='scale-btn';
+      if(i+1==val) btn.classList.add('active-'+(type||key));
+    });
+  }
+  save();
+}
+function setPain(sid,val) {
+  logs[sid].pain=val;
+  const detail=document.getElementById('painDetail-'+sid); if(detail)detail.style.display=val?'':'none';
+  const page=document.getElementById('page-sess-'+sid);
+  page.querySelectorAll('.toggle-btn').forEach(b=>{ b.className='toggle-btn';
+    if(val===false&&b.textContent.includes('Nessuno'))b.classList.add('active-no');
+    if(val===true&&b.textContent.includes('Sì'))b.classList.add('active-yes'); });
+  save();
+}
+
+let currentPage='';
+function showNav(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if (name==='train') {
+    if(sessions.length){showNav('sess-'+sessions[0].id);return;}
+    document.getElementById('page-train-empty')?.classList.add('active'); currentPage='page-train-empty';
+    document.getElementById('nav-train').classList.add('active');
+  } else if (name==='report') {
+    document.getElementById('page-report').classList.add('active'); document.getElementById('nav-report').classList.add('active'); currentPage='page-report';
+  } else if (name.startsWith('sess-')) {
+    const sid=name.replace('sess-','');
+    document.getElementById('page-'+name)?.classList.add('active'); currentPage='page-'+name;
+    document.querySelectorAll(`.tab[data-sid="${sid}"]`).forEach(t=>t.classList.add('active'));
+    document.getElementById('nav-train').classList.add('active');
+  }
+}
+
+function generateReport() {
+  const lines=[]; const w=config.weekNum||'?';
+  lines.push(`═══════════════════════════════`);
+  lines.push(`📋 WEEKLY LOG — W${w}`);
+  lines.push(`Atleta: ${config.userName||'Atleta'} | Obiettivo: ${config.userGoal||'—'}`);
+  lines.push(`═══════════════════════════════`); lines.push('');
+  let done=0;
+  sessions.forEach(s=>{
+    const log=logs[s.id]; if(!log)return;
+    if(log.done)done++;
+    lines.push(`┌─ ${s.day?s.day+' · ':''}${s.name||'Sessione'} ${log.done?'✓':'○'}${s.duration?' (~'+s.duration+' min)':''}`);
+    (s.exercises||[]).forEach(ex=>{
+      const el=log.exLogs?.[ex.id]||{};
+      if(ex.type==='mobility'){
+        lines.push(`│  ${el.done?'✓':'○'} ${ex.name}${el.note?' — '+el.note:''}`);
+        return;
+      }
+      let line=`│  ${el.done?'✓':'○'} ${ex.name}  [${ex.prescribed}]`;
+      if(el.done_val)line+=`  → ${el.done_val}`;
+      if(el.rpe)line+=`  RPE:${el.rpe}`;
+      if(ex.restLabel)line+=`  ⏸${ex.restLabel}`;
+      lines.push(line);
+      if(el.note)lines.push(`│     ↳ ${el.note}`);
+    });
+    const v=log.vitals||{};
+    const vl=[v.energy?`⚡${v.energy}`:null,v.sleep?`😴${v.sleep}`:null,v.stress?`🧠${v.stress}`:null,v.rpe?`🎯${v.rpe}`:null,v.weight?`⚖️${v.weight}kg`:null].filter(Boolean).join('  ');
+    if(vl)lines.push(`│  ${vl}`);
+    if(log.pain===true)lines.push(`│  🩹 ${log.painNote||'Dolore segnalato'}`);
+    else if(log.pain===false)lines.push(`│  🩹 Nessun dolore`);
+    if(log.sessionNote)lines.push(`│  📝 ${log.sessionNote}`);
+    lines.push(`└─────────────────────────────`); lines.push('');
+  });
+  lines.push(`Sessioni completate: ${done}/${sessions.length}`);
+  lines.push(`[Fine report W${w}]`);
+  const text=lines.join('\n');
+  document.getElementById('reportOutput').innerHTML=`<div class="report-box">${esc(text)}</div>`;
+  document.getElementById('copyBtn').style.display='';
+  document.getElementById('copyBtn').dataset.report=text;
+  showToast('Report generato ✓');
+}
+
+function copyReport() {
+  const text=document.getElementById('copyBtn').dataset.report;
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>showToast('📋 Copiato!'));}
+  else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('📋 Copiato!');}
+}
+
+function clearWeekData() {
+  if(!confirm(`Azzerare tutti i dati di W${config.weekNum}? Il piano rimane invariato.`))return;
+  logs={};
+  sessions.forEach(s=>{
+    logs[s.id]={done:false,exLogs:{},vitals:{},pain:null,painNote:'',sessionNote:''};
+    (s.exercises||[]).forEach(ex=>{logs[s.id].exLogs[ex.id]={done:false,done_val:'',rpe:'',note:''};});
+  });
+  save(); buildTrainingPages();
+  document.getElementById('reportOutput').innerHTML='';
+  document.getElementById('copyBtn').style.display='none';
+  showToast('Dati settimana azzerati'); showNav('train');
+}
+
+// ── DEFAULT DATA (replaced by coach on first delivery) ──
+function initDefaults() {
+  if(sessions.length)return;
+  sessions=[
+    { id:uid(), name:'Skill Push + Shoulder', day:'G1', duration:'70', exercises:[
+      {id:uid(),name:'Tuck planche hold',prescribed:'5×5-8s @RPE9',type:'time',rest:'3-4min',restLabel:'3–4 min'},
+      {id:uid(),name:'Planche lean advanced',prescribed:'4×15-20s @RPE8',type:'time',rest:'3-4min',restLabel:'3–4 min'},
+      {id:uid(),name:'Pseudo planche push-up',prescribed:'4×5-6 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Pike push-up feet elevated',prescribed:'4×6-8 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Pike push-up negative (HSPU)',prescribed:'3×4-5 @RPE7',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Dip parallette BW',prescribed:'3×12-15',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Face pull band',prescribed:'3×15',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Cool-down mobilità',prescribed:'Wrist circles 2×30s • Doorway stretch 2×45s • Sleeper stretch 2×45s • Hip flexor lunge 2×45s/lato',type:'mobility',rest:'',restLabel:''},
+    ]},
+    { id:uid(), name:'Pull + Front Lever', day:'G2', duration:'75', exercises:[
+      {id:uid(),name:'Front lever full hold',prescribed:'4×3-4s @RPE8',type:'time',rest:'3-4min',restLabel:'3–4 min'},
+      {id:uid(),name:'Front lever straddle hold',prescribed:'3×6-8s @RPE7',type:'time',rest:'3-4min',restLabel:'3–4 min'},
+      {id:uid(),name:'Ice cream makers (straddle)',prescribed:'3×3-4 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Weighted pull-ups heavy',prescribed:'4×4-5 @+55kg @RPE9',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Weighted pull-ups volume',prescribed:'2×8 @+20kg @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Archer row',prescribed:'3×6/lato @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Curl band/peso',prescribed:'3×10-12',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Cool-down mobilità',prescribed:'Lat stretch 2×45s • Posterior shoulder 2×45s/lato • Thoracic foam roll 2×60s • Bicep wall stretch 2×30s/lato',type:'mobility',rest:'',restLabel:''},
+    ]},
+    { id:uid(), name:'Legs', day:'G3', duration:'65', exercises:[
+      {id:uid(),name:'Pistol squat (o assistito)',prescribed:'4×5-6/lato @RPE8',type:'reps',rest:'2min',restLabel:'2 min'},
+      {id:uid(),name:'Bulgarian split squat weighted',prescribed:'4×8-10/lato @RPE8',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Nordic curl negative',prescribed:'4×5 @RPE8',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Single-leg RDL weighted',prescribed:'3×8/lato @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Side-lying abduction band',prescribed:'3×15/lato @RPE6',type:'reps',rest:'60s',restLabel:'60 sec'},
+      {id:uid(),name:'Cool-down mobilità',prescribed:'Hip flexor lunge 2×60s/lato • Pigeon pose 2×60s/lato • Seated hamstring PNF 3×30s • Butterfly 2×45s • Calf stretch 2×30s/lato',type:'mobility',rest:'',restLabel:''},
+    ]},
+    { id:uid(), name:'Skill Push + Hypertrophy', day:'G4', duration:'80', exercises:[
+      {id:uid(),name:'Tuck planche hold',prescribed:'4×5-7s @RPE7',type:'time',rest:'3-4min',restLabel:'3–4 min'},
+      {id:uid(),name:'Pseudo planche push-up',prescribed:'4×6-8 @RPE7',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Planche lean isometric',prescribed:'3×20-25s @RPE6',type:'time',rest:'3min',restLabel:'3 min'},
+      {id:uid(),name:'Weighted dip',prescribed:'4×6-8 @+20-25kg @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Pike push-up feet elevated',prescribed:'3×8-10 @RPE7',type:'reps',rest:'2min',restLabel:'2 min'},
+      {id:uid(),name:'Archer push-up',prescribed:'3×5-6/lato @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Serratus wall slide',prescribed:'3×10',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Band pull-apart Y/T/W',prescribed:'3×12 cad.',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Thoracic extension foam roller',prescribed:'2×10',type:'reps',rest:'60s',restLabel:'60 sec'},
+      {id:uid(),name:'Cool-down mobilità',prescribed:'Wrist extension stretch 2×45s • Prayer stretch 2×30s • Chest doorway 2×45s/lato • Serratus wall slide stretch 2×30s',type:'mobility',rest:'',restLabel:''},
+    ]},
+    { id:uid(), name:'Pull + OAP + MU', day:'G5', duration:'75', exercises:[
+      {id:uid(),name:'OAP negative',prescribed:'4×1/braccio (8-10s ecc.) @RPE9',type:'reps',rest:'3-4min',restLabel:'3–4 min'},
+      {id:uid(),name:'OAP assisted band',prescribed:'3×2-3/braccio @RPE8',type:'reps',rest:'3min',restLabel:'3 min'},
+      {id:uid(),name:'Strict muscle-up',prescribed:'3×4-5 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Muscle-up negative slow',prescribed:'2×3 @RPE7',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Weighted pull-ups',prescribed:'4×6-8 @+30-35kg @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
+      {id:uid(),name:'Inverted row feet elevated',prescribed:'3×10-12 @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Hammer curl weighted',prescribed:'3×10-12 @RPE6',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Cool-down mobilità',prescribed:'Lat overhead stretch 2×45s • Cross-body shoulder 2×45s/lato • Thoracic rotation 2×8/lato • Wrist circles 2×30s',type:'mobility',rest:'',restLabel:''},
+    ]},
+    { id:uid(), name:'HS + Core + Mobility', day:'G6', duration:'60', exercises:[
+      {id:uid(),name:'Freestanding HS',prescribed:'8×20-30s',type:'time',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Wall HS chest-to-wall',prescribed:'3×30-45s',type:'time',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'HS shoulder taps',prescribed:'3×5/lato',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Dragon flag negative',prescribed:'3×5 @RPE8',type:'reps',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'L-sit parallette',prescribed:'3×max hold',type:'time',rest:'90s',restLabel:'90 sec'},
+      {id:uid(),name:'Hollow body hold',prescribed:'3×30s',type:'time',rest:'60-90s',restLabel:'60–90 sec'},
+      {id:uid(),name:'Mobility circuit',prescribed:'sleeper/cross-body/doorway/wrist/lunge/pancake/thoracic',type:'reps',rest:'30s',restLabel:'30 sec'},
+    ]},
+  ];
+  config.weekNum=1; config.userName=''; config.userGoal='Planche + Recomp';
+  save();
+}
+
+load(); initDefaults(); buildTrainingPages(); showNav('train');
+</script>
+</body>
+</html>
