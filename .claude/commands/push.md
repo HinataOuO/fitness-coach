@@ -13,12 +13,7 @@ Steps (run sequentially):
 4. Draft a concise commit message (1-2 sentences, focus on WHY not WHAT). Use the repo's existing commit style.
 5. Commit with:
 ```
-git commit -m "$(cat <<'EOF'
-<message>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
-EOF
-)"
+git commit -m "<message>"
 ```
 6. Push to current branch: `git push` (add `-u origin <branch>` if no upstream set).
 7. Report: what was committed, what was pushed, branch name.
