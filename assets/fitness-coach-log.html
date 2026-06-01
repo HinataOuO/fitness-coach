@@ -110,9 +110,8 @@
   <div class="card">
     <div class="card-title">📤 Report Settimanale</div>
     <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">Genera il report da copiare e incollare in chat col coach ogni domenica.</p>
-    <button class="btn btn-primary" onclick="generateReport()">⚡ Genera Report</button>
+    <button class="btn btn-primary" onclick="generateReport()">⬇️ Genera & Scarica Report</button>
     <div id="reportOutput"></div>
-    <button class="btn btn-secondary" id="copyBtn" style="display:none" onclick="copyReport()">📋 Copia Report</button>
   </div>
   <div class="card">
     <div class="card-title">⚙️ Dati Settimana</div>
@@ -345,15 +344,12 @@ function generateReport() {
   lines.push(`[Fine report W${w}]`);
   const text=lines.join('\n');
   document.getElementById('reportOutput').innerHTML=`<div class="report-box">${esc(text)}</div>`;
-  document.getElementById('copyBtn').style.display='';
-  document.getElementById('copyBtn').dataset.report=text;
-  showToast('Report generato ✓');
-}
-
-function copyReport() {
-  const text=document.getElementById('copyBtn').dataset.report;
-  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>showToast('📋 Copiato!'));}
-  else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('📋 Copiato!');}
+  const blob=new Blob([text],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`report-W${w}.txt`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Report scaricato ✓');
 }
 
 function clearWeekData() {
@@ -365,7 +361,6 @@ function clearWeekData() {
   });
   save(); buildTrainingPages();
   document.getElementById('reportOutput').innerHTML='';
-  document.getElementById('copyBtn').style.display='none';
   showToast('Dati settimana azzerati'); showNav('train');
 }
 

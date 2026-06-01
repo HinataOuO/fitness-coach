@@ -27,7 +27,6 @@ assignees: HinataOuO
 ## Context
 
 - Phase: <!-- profiling / planning / monitoring -->
-- Profile: <!-- Pietro / Giulia / new user -->
 - Skill file(s): <!-- e.g. phases/planning.md, references/gym-progressions.md -->
 
 ## Area
