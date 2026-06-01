@@ -111,6 +111,7 @@
     <div class="card-title">📤 Report Settimanale</div>
     <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">Genera il report da copiare e incollare in chat col coach ogni domenica.</p>
     <button class="btn btn-primary" onclick="generateReport()">⬇️ Genera & Scarica Report</button>
+    <button class="btn btn-secondary" onclick="clearAllData()" style="margin-top:6px">🔄 Svuota cache piano</button>
     <div id="reportOutput"></div>
   </div>
   <div class="card">
@@ -133,7 +134,8 @@
 let config = { weekNum:1, userName:'', userGoal:'' };
 let sessions = [];
 let logs = {};
-const STORAGE_KEY = 'fitness_log_v3';
+const PLAN_ID = 'W1'; // coach aggiorna questo valore ad ogni nuova scheda
+const STORAGE_KEY = 'fitness_log_v3_' + PLAN_ID;
 
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify({config,sessions,logs})); }
 function load() {
@@ -362,6 +364,12 @@ function clearWeekData() {
   save(); buildTrainingPages();
   document.getElementById('reportOutput').innerHTML='';
   showToast('Dati settimana azzerati'); showNav('train');
+}
+
+function clearAllData() {
+  if(!confirm('Svuotare tutti i dati del piano corrente? Impossibile annullare.'))return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
 }
 
 // ── DEFAULT DATA (replaced by coach on first delivery) ──
