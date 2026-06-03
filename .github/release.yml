@@ -1,0 +1,20 @@
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+  categories:
+    - title: "Breaking Changes"
+      labels:
+        - breaking-change
+    - title: "New Features & References"
+      labels:
+        - enhancement
+    - title: "Bug Fixes"
+      labels:
+        - bug
+    - title: "Internal / Refactor"
+      labels:
+        - chore
+    - title: "Other"
+      labels:
+        - "*"
