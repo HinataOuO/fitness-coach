@@ -24,8 +24,13 @@ Commit and push relevant changes from the current repository.
 5. If the user supplied commit text after the skill name, use it as the commit
    message. Otherwise write a concise message matching repo style.
 6. Commit with `git commit -m "<message>"`.
-7. Push to the current branch with `git push`.
-8. Report:
+7. Show the created commit before pushing:
+   - Run `git show --stat --oneline --summary HEAD`
+   - Report the commit hash, message, branch, and included files.
+8. Ask the user for explicit confirmation before pushing.
+   - Do not run `git push` until the user confirms.
+9. Push to the current branch with `git push`.
+10. Report:
    - commit hash and message
    - branch
    - remote push result
@@ -36,6 +41,7 @@ Commit and push relevant changes from the current repository.
 - Do not force push.
 - Do not skip hooks with `--no-verify`.
 - Do not use `git add -A` unless every changed file is clearly safe and related.
+- Always show the created commit and ask for confirmation before pushing.
 - If push fails because history diverged, stop and report the error. Do not
   rebase, merge, or reset without user confirmation.
 - If there are unrelated unstaged changes, leave them alone and mention them.
