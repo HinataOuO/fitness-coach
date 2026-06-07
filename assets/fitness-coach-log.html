@@ -109,9 +109,10 @@
 <div class="page" id="page-report">
   <div class="card">
     <div class="card-title">📤 Report Settimanale</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">Genera il report da copiare e incollare in chat col coach ogni domenica.</p>
-    <button class="btn btn-primary" onclick="generateReport()">⬇️ Genera & Scarica Report</button>
-    <button class="btn btn-secondary" onclick="clearAllData()" style="margin-top:6px">🔄 Svuota cache piano</button>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">Genera il report, copialo e incollalo in chat col coach ogni domenica.</p>
+    <button class="btn btn-primary" onclick="generateReport()">📋 Genera Report</button>
+    <button class="btn btn-secondary" onclick="copyReport()" style="margin-top:6px">📎 Copia Report</button>
+    <button class="btn btn-secondary" onclick="downloadReport()" style="margin-top:6px">⬇️ Scarica .txt</button>
     <div id="reportOutput"></div>
   </div>
   <div class="card">
@@ -134,6 +135,7 @@
 let config = { weekNum:1, userName:'', userGoal:'' };
 let sessions = [];
 let logs = {};
+let lastReport = '';
 const PLAN_ID = 'W1'; // coach aggiorna questo valore ad ogni nuova scheda
 const STORAGE_KEY = 'fitness_log_v3_' + PLAN_ID;
 
@@ -219,7 +221,6 @@ function buildTrainingPages() {
 function renderEx(sid,ex) {
   const el=logs[sid]?.exLogs?.[ex.id]||{};
 
-  // Mobility type — simplified: checkbox + notes only
   if(ex.type==='mobility') {
     return `<div class="exercise-block" style="border-color:rgba(71,184,255,0.25);background:rgba(71,184,255,0.05)">
       <div class="ex-header">
@@ -344,9 +345,31 @@ function generateReport() {
   });
   lines.push(`Sessioni completate: ${done}/${sessions.length}`);
   lines.push(`[Fine report W${w}]`);
-  const text=lines.join('\n');
-  document.getElementById('reportOutput').innerHTML=`<div class="report-box">${esc(text)}</div>`;
-  const blob=new Blob([text],{type:'text/plain'});
+  lastReport=lines.join('\n');
+  document.getElementById('reportOutput').innerHTML=`<div class="report-box">${esc(lastReport)}</div>`;
+  showToast('Report generato');
+}
+
+async function copyReport() {
+  if(!lastReport)generateReport();
+  try{
+    await navigator.clipboard.writeText(lastReport);
+    showToast('Report copiato ✓');
+  }catch(e){
+    const box=document.querySelector('.report-box');
+    if(!box)return showToast('Genera prima il report');
+    const r=document.createRange();
+    r.selectNodeContents(box);
+    const s=getSelection();
+    s.removeAllRanges(); s.addRange(r);
+    showToast('Report selezionato: copia manuale');
+  }
+}
+
+function downloadReport() {
+  if(!lastReport)generateReport();
+  const w=config.weekNum||'?';
+  const blob=new Blob([lastReport],{type:'text/plain'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url; a.download=`report-W${w}.txt`; a.click();
@@ -366,77 +389,10 @@ function clearWeekData() {
   showToast('Dati settimana azzerati'); showNav('train');
 }
 
-function clearAllData() {
-  if(!confirm('Svuotare tutti i dati del piano corrente? Impossibile annullare.'))return;
-  localStorage.removeItem(STORAGE_KEY);
-  location.reload();
-}
-
-// ── DEFAULT DATA (replaced by coach on first delivery) ──
 function initDefaults() {
   if(sessions.length)return;
-  sessions=[
-    { id:uid(), name:'Skill Push + Shoulder', day:'G1', duration:'70', exercises:[
-      {id:uid(),name:'Tuck planche hold',prescribed:'5×5-8s @RPE9',type:'time',rest:'3-4min',restLabel:'3–4 min'},
-      {id:uid(),name:'Planche lean advanced',prescribed:'4×15-20s @RPE8',type:'time',rest:'3-4min',restLabel:'3–4 min'},
-      {id:uid(),name:'Pseudo planche push-up',prescribed:'4×5-6 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Pike push-up feet elevated',prescribed:'4×6-8 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Pike push-up negative (HSPU)',prescribed:'3×4-5 @RPE7',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Dip parallette BW',prescribed:'3×12-15',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Face pull band',prescribed:'3×15',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Cool-down mobilità',prescribed:'Wrist circles 2×30s • Doorway stretch 2×45s • Sleeper stretch 2×45s • Hip flexor lunge 2×45s/lato',type:'mobility',rest:'',restLabel:''},
-    ]},
-    { id:uid(), name:'Pull + Front Lever', day:'G2', duration:'75', exercises:[
-      {id:uid(),name:'Front lever full hold',prescribed:'4×3-4s @RPE8',type:'time',rest:'3-4min',restLabel:'3–4 min'},
-      {id:uid(),name:'Front lever straddle hold',prescribed:'3×6-8s @RPE7',type:'time',rest:'3-4min',restLabel:'3–4 min'},
-      {id:uid(),name:'Ice cream makers (straddle)',prescribed:'3×3-4 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Weighted pull-ups heavy',prescribed:'4×4-5 @+55kg @RPE9',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Weighted pull-ups volume',prescribed:'2×8 @+20kg @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Archer row',prescribed:'3×6/lato @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Curl band/peso',prescribed:'3×10-12',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Cool-down mobilità',prescribed:'Lat stretch 2×45s • Posterior shoulder 2×45s/lato • Thoracic foam roll 2×60s • Bicep wall stretch 2×30s/lato',type:'mobility',rest:'',restLabel:''},
-    ]},
-    { id:uid(), name:'Legs', day:'G3', duration:'65', exercises:[
-      {id:uid(),name:'Pistol squat (o assistito)',prescribed:'4×5-6/lato @RPE8',type:'reps',rest:'2min',restLabel:'2 min'},
-      {id:uid(),name:'Bulgarian split squat weighted',prescribed:'4×8-10/lato @RPE8',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Nordic curl negative',prescribed:'4×5 @RPE8',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Single-leg RDL weighted',prescribed:'3×8/lato @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Side-lying abduction band',prescribed:'3×15/lato @RPE6',type:'reps',rest:'60s',restLabel:'60 sec'},
-      {id:uid(),name:'Cool-down mobilità',prescribed:'Hip flexor lunge 2×60s/lato • Pigeon pose 2×60s/lato • Seated hamstring PNF 3×30s • Butterfly 2×45s • Calf stretch 2×30s/lato',type:'mobility',rest:'',restLabel:''},
-    ]},
-    { id:uid(), name:'Skill Push + Hypertrophy', day:'G4', duration:'80', exercises:[
-      {id:uid(),name:'Tuck planche hold',prescribed:'4×5-7s @RPE7',type:'time',rest:'3-4min',restLabel:'3–4 min'},
-      {id:uid(),name:'Pseudo planche push-up',prescribed:'4×6-8 @RPE7',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Planche lean isometric',prescribed:'3×20-25s @RPE6',type:'time',rest:'3min',restLabel:'3 min'},
-      {id:uid(),name:'Weighted dip',prescribed:'4×6-8 @+20-25kg @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Pike push-up feet elevated',prescribed:'3×8-10 @RPE7',type:'reps',rest:'2min',restLabel:'2 min'},
-      {id:uid(),name:'Archer push-up',prescribed:'3×5-6/lato @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Serratus wall slide',prescribed:'3×10',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Band pull-apart Y/T/W',prescribed:'3×12 cad.',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Thoracic extension foam roller',prescribed:'2×10',type:'reps',rest:'60s',restLabel:'60 sec'},
-      {id:uid(),name:'Cool-down mobilità',prescribed:'Wrist extension stretch 2×45s • Prayer stretch 2×30s • Chest doorway 2×45s/lato • Serratus wall slide stretch 2×30s',type:'mobility',rest:'',restLabel:''},
-    ]},
-    { id:uid(), name:'Pull + OAP + MU', day:'G5', duration:'75', exercises:[
-      {id:uid(),name:'OAP negative',prescribed:'4×1/braccio (8-10s ecc.) @RPE9',type:'reps',rest:'3-4min',restLabel:'3–4 min'},
-      {id:uid(),name:'OAP assisted band',prescribed:'3×2-3/braccio @RPE8',type:'reps',rest:'3min',restLabel:'3 min'},
-      {id:uid(),name:'Strict muscle-up',prescribed:'3×4-5 @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Muscle-up negative slow',prescribed:'2×3 @RPE7',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Weighted pull-ups',prescribed:'4×6-8 @+30-35kg @RPE8',type:'reps',rest:'2-3min',restLabel:'2–3 min'},
-      {id:uid(),name:'Inverted row feet elevated',prescribed:'3×10-12 @RPE7',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Hammer curl weighted',prescribed:'3×10-12 @RPE6',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Cool-down mobilità',prescribed:'Lat overhead stretch 2×45s • Cross-body shoulder 2×45s/lato • Thoracic rotation 2×8/lato • Wrist circles 2×30s',type:'mobility',rest:'',restLabel:''},
-    ]},
-    { id:uid(), name:'HS + Core + Mobility', day:'G6', duration:'60', exercises:[
-      {id:uid(),name:'Freestanding HS',prescribed:'8×20-30s',type:'time',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Wall HS chest-to-wall',prescribed:'3×30-45s',type:'time',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'HS shoulder taps',prescribed:'3×5/lato',type:'reps',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Dragon flag negative',prescribed:'3×5 @RPE8',type:'reps',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'L-sit parallette',prescribed:'3×max hold',type:'time',rest:'90s',restLabel:'90 sec'},
-      {id:uid(),name:'Hollow body hold',prescribed:'3×30s',type:'time',rest:'60-90s',restLabel:'60–90 sec'},
-      {id:uid(),name:'Mobility circuit',prescribed:'sleeper/cross-body/doorway/wrist/lunge/pancake/thoracic',type:'reps',rest:'30s',restLabel:'30 sec'},
-    ]},
-  ];
-  config.weekNum=1; config.userName=''; config.userGoal='Planche + Recomp';
+  sessions=[];
+  config.weekNum=1; config.userName='USER_NAME'; config.userGoal='USER_GOAL';
   save();
 }
 

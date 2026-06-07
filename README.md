@@ -1,6 +1,6 @@
 # Fitness Coach Skill
 
-An expert fitness coaching system for Claude Code that provides personalized training plans, weekly monitoring, and evidence-based programming for bodyweight (calisthenics, street lifting, gymnastics) and gym-based training.
+An expert fitness coaching system for Codex that provides personalized training plans, weekly monitoring, and evidence-based programming for bodyweight (calisthenics, street lifting, gymnastics) and gym-based training.
 
 ## Overview
 
@@ -9,10 +9,22 @@ The skill acts as a persistent, profile-aware coach. It stores user data (goals,
 ## Usage
 
 ```
-/fitness-coach
+$fitness-coach
 ```
 
-Invoke from any Claude Code session. The skill auto-detects context (new user vs returning, which phase to enter) and guides the conversation accordingly.
+Invoke from any Codex session by mentioning `$fitness-coach` or by asking a fitness/training question. The skill auto-detects context (new user vs returning, which phase to enter) and guides the conversation accordingly.
+
+## Codex Command Skills
+
+Claude command workflows from `.claude/commands/` have Codex-native versions in `codex/skills/`:
+
+| Skill | Purpose |
+|-------|---------|
+| `$push` | Stage relevant files, commit, and push the current branch |
+| `$release` | Create a GitHub release with generated notes |
+| `$git-issue` | Fetch a GitHub issue and build a session plan |
+
+See `codex/README.md` for install notes.
 
 ## Phases
 

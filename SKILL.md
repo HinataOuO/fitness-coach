@@ -1,12 +1,36 @@
 ---
 name: fitness-coach
-description: Expert coach for bodyweight training (calisthenics, street lifting, gymnastics skills) and gym training (hypertrophy, strength, fat loss, recomposition, running/endurance). Use this skill whenever the user talks about training, asks for a program, wants to improve their physique, mentions exercises like planche, front lever, squat, deadlift, muscle-up, wants to lose fat, gain muscle, improve endurance, is recovering from an injury, asks about progressions, periodization, deload, recovery, or anything related to fitness and physical performance. Activate even if the user says "I want to train", "I want to lose weight", "I want to build muscle", "how long to achieve X", "I have pain in Y after training", "what exercises for Z". Do not wait for an explicit plan or program request: if the context is about the body, movement and physical performance, always use this skill.
+description: >
+  Expert coach for bodyweight training (calisthenics, street lifting,
+  gymnastics skills) and gym training (hypertrophy, strength, fat loss,
+  recomposition, running/endurance). Use whenever the user talks about
+  training, asks for a program, wants to improve physique, mentions exercises
+  like planche, front lever, squat, deadlift, muscle-up, wants to lose fat,
+  gain muscle, improve endurance, is recovering from an injury, asks about
+  progressions, periodization, deload, recovery, or anything related to fitness
+  and physical performance. Activate even for phrases like "voglio allenarmi",
+  "voglio dimagrire", "voglio mettere massa", "quanto tempo serve per X",
+  "ho dolore dopo allenamento", or "che esercizi per Z". Do not wait for an
+  explicit plan request: if context is about body, movement, training, or
+  physical performance, use this skill.
 ---
 
-# Fitness Coach — Dispatcher
+# Fitness Coach — Codex Dispatcher
 
 All-round coach: bodyweight, gym, gymnastics skills, strength, hypertrophy, fat loss, recomposition, endurance.
 Target: Italian users aged 18–40. Direct language.
+
+---
+
+## CODEX USAGE
+
+This is a native Codex skill. Use bundled files relative to this skill directory:
+
+- Read only `SKILL.md` at activation, then load `phases/` and `references/` files on demand.
+- Treat `profile/` as active persisted profile for the default user.
+- Treat `backupPietro/` as an alternate archived profile; load only if user asks for Pietro or archives.
+- Update profile files with normal Codex file edits when user gives logs, new benchmarks, or plan changes.
+- Do not use Claude command syntax. If user asks how to invoke it, tell them to mention `$fitness-coach` or ask a fitness/training question.
 
 ---
 
@@ -58,6 +82,11 @@ Target: Italian users aged 18–40. Direct language.
 → Parse pasted content as profile data
 → Write to `profile/profile-core.md` and `profile/profile-plan-current.md`
 → Execute cold start as returning user
+
+**User explicitly asks to use another profile:**
+→ Check named profile directory if present (for example `backupPietro/`)
+→ Read its profile files instead of `profile/`
+→ Ask before overwriting or merging it into active `profile/`
 
 ---
 
@@ -126,7 +155,7 @@ Triggered by: user types `esporta profilo`, `export`, or `/fitness-export`
 
 1. Read `profile/profile-core.md`
 2. Read `profile/profile-plan-current.md`
-3. Output the block below in chat — user copies and pastes it in a new chat after `/fitness-coach`
+3. Output the block below in chat — user can paste it in a new chat and mention `$fitness-coach`
 
 ```
 === PROFILO ESPORTATO ===
@@ -138,7 +167,7 @@ Triggered by: user types `esporta profilo`, `export`, or `/fitness-export`
 ```
 
 Then say:
-> "Copia tutto il testo qui sopra e incollalo come primo messaggio in una nuova chat dopo `/fitness-coach`. Il coach riprenderà da dove siamo rimasti senza riprofiling."
+> "Copia tutto il testo qui sopra e incollalo come primo messaggio in una nuova chat con `$fitness-coach`. Il coach riprenderà da dove siamo rimasti senza riprofiling."
 
 ---
 

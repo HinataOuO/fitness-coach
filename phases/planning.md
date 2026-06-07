@@ -122,7 +122,7 @@ Fornisci anche su richiesta se l'utente chiede come tracciare le sessioni.
 > "Ecco la tua app di log personalizzata — salvala sul telefono (Safari: Condividi → Aggiungi a schermata Home / Chrome: Menu → Aggiungi a schermata). Funziona offline, trovi già le tue sessioni caricate. Ogni domenica genera il report e incollalo qui."
 
 ### Come generarla — step by step
-1. Leggi `assets/fitness-coach-log.html` con il tool Read
+1. Leggi `assets/fitness-coach-log.html` dalla directory della skill
 2. Copia il contenuto completo del file
 3. Sostituisci ONLY la funzione `initDefaults()` con il piano dell'utente
 4. Sostituisci `USER_NAME` con il nome dell'utente e `USER_GOAL` con l'obiettivo
