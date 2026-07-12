@@ -103,11 +103,13 @@ Includi il campo `duration` in ogni sessione del JSON settimanale.
 
 ---
 
-## ARTEFATTI SETTIMANALI JSON
+## ARTEFATTI SETTIMANALI JSON E HTML
 
 `generate-week-plan` è il solo percorso canonico per creare o rigenerare il piano della settimana. Carica e segui `.agents/skills/generate-week-plan/SKILL.md`; il wrapper Claude è `/generate-week-plan`.
 
 Output canonici:
 - `artifacts/<slug-atleta>/week-W<N>.json`
 
-`assets/fitness-coach-log.html` è app unica, vuota e riutilizzabile: atleta importa JSON settimanale. Durante generazione non leggere, copiare o modificare template HTML e non produrre HTML settimanale. Valida JSON con `python3 scripts/generate_week_plan.py <week-WN.json>`. `--output` resta solo per compatibilità standalone esplicita.
+JSON è output predefinito e fonte canonica. Validalo in temporaneo con `python3 scripts/generate_week_plan.py <temp-json>` e pubblicalo solo dopo uscita zero. Una rigenerazione JSON-only elimina l'eventuale HTML della stessa settimana perché obsoleto.
+
+Se l'utente chiede esplicitamente qualsiasi scheda, piano o settimana in formato HTML, atleta e settimana sono obbligatori e la richiesta passa sempre da `generate-week-plan`. Crea JSON e HTML temporanei; genera HTML esclusivamente con `python3 scripts/generate_week_plan.py <temp-json> --output <temp-html>`, mai scrivendolo o modificandolo direttamente. Pubblica entrambi solo dopo uscita zero. Su errore preserva gli artefatti precedenti e rimuovi i temporanei.

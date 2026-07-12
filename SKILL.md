@@ -42,6 +42,7 @@ the current request requires them:
 |---|---|
 | New athlete/profiling | `phases/profiling.md`; `references/profile-schema.md` only when writing |
 | Build/revise plan | `phases/planning.md`, `references/goal-compatibility.md`, relevant gym/bodyweight progression |
+| Weekly plan JSON or any HTML plan/card/week request | `.agents/skills/generate-week-plan/SKILL.md`; require athlete and week before writing |
 | Weekly log/check-in | `phases/monitoring.md`; only latest required log section |
 | History/archive/export | matching athlete file only |
 | Pain/injury | `references/common-injuries.md` |
@@ -56,6 +57,10 @@ the current request requires them:
 
 Load no unrelated reference. Do not load full log history to find the latest
 report: search headings and read only the final relevant section.
+
+Any request for a training card, plan or week in HTML format must route through
+`generate-week-plan`. If athlete or week is missing, ask for the missing value;
+never create HTML directly.
 
 ## Persisted updates
 

@@ -208,6 +208,20 @@ class GenerateWeekPlanTests(unittest.TestCase):
         )
         self.assertEqual(visible.returncode, 1, visible.stdout)
 
+    def test_week_plan_documentation_enforces_json_to_html_contract(self):
+        dispatcher = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        skill = (ROOT / ".agents" / "skills" / "generate-week-plan" / "SKILL.md").read_text(encoding="utf-8")
+        planning = (ROOT / "phases" / "planning.md").read_text(encoding="utf-8")
+        command = "python3 scripts/generate_week_plan.py <temp-json> --output <temp-html>"
+
+        self.assertIn("Any request for a training card, plan or week in HTML format must route through", dispatcher)
+        self.assertIn("If athlete or week is missing, ask for the missing value", dispatcher)
+        self.assertIn("Output predefinito solo JSON", skill)
+        self.assertIn("elimina l'eventuale HTML obsoleto", skill)
+        self.assertIn(command, skill)
+        self.assertIn(command, planning)
+        self.assertIn("Pubblica entrambi solo dopo uscita zero", planning)
+
 
 if __name__ == "__main__":
     unittest.main()
