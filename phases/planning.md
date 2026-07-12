@@ -83,10 +83,7 @@ Pseudo planche push-up 4×5-6 @RPE8   — pausa: 2–3 min
 Face pull elastico     3×15           — pausa: 60–90 sec
 ```
 
-**Come includere nel file HTML:**
-```javascript
-{ id: uid(), name: 'Tuck planche hold', prescribed: '5×5-8s @RPE9', type: 'time', rest: '3-4min', restLabel: '3–4 min' }
-```
+Nel JSON settimanale usa `rest` e `restLabel`; app HTML unica li renderizza dinamicamente.
 
 ---
 
@@ -102,77 +99,15 @@ Guida rapida:
 - Forza pura (pesante, basso volume): **60–75 min**
 
 Indicalo chiaramente nel piano: *"Durata stimata: ~70 min (warm-up incluso)"*
-Includi il campo `duration` nell'HTML `initDefaults()` per ogni sessione.
+Includi il campo `duration` in ogni sessione del JSON settimanale.
 
 ---
 
-## APP LOG HTML
+## ARTEFATTI SETTIMANALI JSON
 
-### Regola critica
-**Il file HTML è l'unico formato di log accettabile.** Mai consegnare il log come testo inline, markdown, JSON, o formato testo in chat.
+`generate-week-plan` è il solo percorso canonico per creare o rigenerare il piano della settimana. Carica e segui `.agents/skills/generate-week-plan/SKILL.md`; il wrapper Claude è `/generate-week-plan`.
 
-### Quando fornirla
-Dopo aver presentato il piano completo in chat, chiedi sempre:
-> "Vuoi che generi anche l'app di log personalizzata per il telefono? È un file HTML offline con le tue sessioni già caricate, le pause indicate per ogni esercizio e la durata stimata. Ogni domenica genera il report e lo incolli qui."
+Output canonici:
+- `artifacts/<slug-atleta>/week-W<N>.json`
 
-Se sì → genera e consegna. Se no → non generare. Offri di nuovo solo se il piano viene rivisto significativamente.
-Fornisci anche su richiesta se l'utente chiede come tracciare le sessioni.
-
-### Come consegnarla
-> "Ecco la tua app di log personalizzata — salvala sul telefono (Safari: Condividi → Aggiungi a schermata Home / Chrome: Menu → Aggiungi a schermata). Funziona offline, trovi già le tue sessioni caricate. Ogni domenica genera il report e incollalo qui."
-
-### Come generarla — step by step
-1. Leggi `assets/fitness-coach-log.html` dalla directory della skill
-2. Copia il contenuto completo del file
-3. Sostituisci ONLY la funzione `initDefaults()` con il piano dell'utente
-4. Sostituisci `USER_NAME` con il nome dell'utente e `USER_GOAL` con l'obiettivo
-5. Presenta il file all'utente
-
-### Struttura initDefaults()
-```javascript
-function initDefaults() {
-  if (sessions.length) return;
-  sessions = [
-    {
-      id: uid(), name: 'SESSION_NAME', day: 'DAY_LABEL',
-      exercises: [
-        { id: uid(), name: 'Exercise name', prescribed: 'sets×reps @RPE', type: 'reps', rest: '90sec', restLabel: '90 sec' },
-        { id: uid(), name: 'Exercise name', prescribed: 'sets×Xs @RPE', type: 'time', rest: '3-4min', restLabel: '3–4 min' },
-        { id: uid(), name: 'Exercise name', prescribed: '2×45s', type: 'mobility' },
-      ]
-    },
-    // repeat for each session
-  ];
-  config.weekNum = 1;
-  config.userName = 'USER_NAME';
-  config.userGoal = 'USER_GOAL';
-  save();
-}
-```
-
-### Regole campi
-
-**day:** usa i giorni reali dell'utente.
-- Italiano breve: `LUN`, `MAR`, `MER`, `GIO`, `VEN`, `SAB`, `DOM`
-- Giorni flessibili/rotanti: `G1`, `G2`, `G3`
-- Mai lasciare vuoto — appare nel tab sessione e nel report settimanale
-
-**type:**
-- `'reps'` → contati in rep, serie o carico
-- `'time'` → isometrici, hold, serie temporizzate (secondi)
-- `'dist'` → corsa, canottaggio, distanza
-- `'mobility'` → cool-down/mobilità — solo checkbox + note
-
-**prescribed per esercizi palestra — CRITICO:**
-Includi sempre il carico specifico. L'utente lo legge durante l'allenamento come riferimento peso. Mai scrivere prescribed senza i kg reali.
-
-- ✅ `'4×5 @80kg @RPE8'`
-- ✅ `'4×8 @60kg @RPE7'`
-- ✅ `'3×10 @40kg @RPE7'`
-- ❌ `'4×5 @RPE8'` — manca il carico
-- ❌ `'4×5-6 heavy @RPE8'` — vago
-- BW: `'4×8 BW @RPE8'` | BW+carico: `'4×6 +20kg @RPE8'` | tempo: `'4×10s @RPE9'` | mobilità: `'2×45s'`
-
-Il carico nel `prescribed` è il **target** per quella settimana. L'utente compila `done_val` con quello che ha effettivamente sollevato.
-
-**Quando il piano viene rivisto:** rigenera e riconsegna il file HTML aggiornato.
+`assets/fitness-coach-log.html` è app unica, vuota e riutilizzabile: atleta importa JSON settimanale. Durante generazione non leggere, copiare o modificare template HTML e non produrre HTML settimanale. Valida JSON con `python3 scripts/generate_week_plan.py <week-WN.json>`. `--output` resta solo per compatibilità standalone esplicita.

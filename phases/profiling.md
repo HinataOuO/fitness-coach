@@ -215,6 +215,6 @@ Fase 1 (4–6 settimane): solo abituazione al movimento — niente carico, bodyw
 ## DOPO IL PROFILING COMPLETO
 
 Quando Blocco I completato e piano costruito:
-1. **Scrivi** `profile/profile-core.md` con tutti i dati raccolti (schema nel dispatcher)
-2. **Scrivi** `profile/profile-plan-current.md` con il piano completo (schema nel dispatcher)
+1. Leggi `references/profile-schema.md`, poi **scrivi** `<athlete>/profile-core.md` con tutti i dati raccolti
+2. **Scrivi** `<athlete>/profile-plan-current.md` con il piano completo
 3. **Offri** l'app HTML di log (vedi `phases/planning.md` → sezione App Log HTML)

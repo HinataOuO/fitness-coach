@@ -3,3 +3,6 @@
 Pietro/
 Giulia/
 profile/
+
+# Generated plans may contain personal training data
+/artifacts/

@@ -80,14 +80,14 @@ Usa il feedback per: progredire (aggiungi profondità/durata), semplificare (se 
 
 Dopo ogni log settimanale ricevuto:
 
-1. Leggi `profile/profile-core.md`
+1. Leggi `<athlete>/profile-core.md`
 2. Aggiorna questi campi se cambiati:
    - `Peso` (usa dato più recente)
    - Benchmarks (solo se migliorati — annota data)
    - `Last log: YYYY-MM-DD`
    - `Plan week: W[N+1]`
-3. Scrivi `profile/profile-core.md` aggiornato
-4. Aggiungi al fondo di `profile/profile-log-history.md`:
+3. Scrivi `<athlete>/profile-core.md` aggiornato
+4. Aggiungi al fondo di `<athlete>/profile-log-history.md`:
 
 ```markdown
 ## W[N] — [data inizio]–[data fine]
@@ -103,9 +103,9 @@ Mobiltà cool-down: regolare / saltata / parziale
 ```
 
 Dopo revisione piano:
-1. Leggi `profile/profile-plans-archive.md`, appendi il piano corrente
-2. Sovrascrivi `profile/profile-plan-current.md` con il nuovo piano
-3. Aggiorna `Plan start` e resetta `Plan week: W1` in `profile/profile-core.md`
+1. Leggi `<athlete>/profile-plans-archive.md`, appendi il piano corrente
+2. Sovrascrivi `<athlete>/profile-plan-current.md` con il nuovo piano
+3. Aggiorna `Plan start` e resetta `Plan week: W1` in `<athlete>/profile-core.md`
 
 ---
 

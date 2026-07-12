@@ -361,13 +361,12 @@ Note: ___
 
 ---
 
-### 9.6 Mobilità nel HTML (istruzioni per generazione file personalizzato)
+### 9.6 Mobilità nel JSON settimanale
 
-Quando il coach genera il file HTML personalizzato, aggiunge per ogni sessione un esercizio di tipo speciale `'mobility'` al fondo della lista esercizi:
+Quando il coach genera il JSON settimanale, aggiunge per ogni sessione un esercizio di tipo speciale `'mobility'` al fondo della lista esercizi; app HTML unica lo renderizza automaticamente:
 
 ```javascript
 { id: uid(), name: 'Cool-down mobilità', prescribed: 'vedi dettaglio piano', type: 'mobility', rest: '', restLabel: '' }
 ```
 
 Il tipo `'mobility'` viene renderizzato in modo semplificato — solo spunta + campo note, senza RPE e senza campo "variazione".
-

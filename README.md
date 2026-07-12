@@ -60,7 +60,7 @@ See `codex/README.md` for install notes.
 - Exercise-specific form cues (calisthenics and gym)
 
 ### HTML Training Log
-An offline, mobile-friendly training log app (`assets/fitness-coach-log.html`) is generated and updated with each plan. Features:
+One offline, mobile-friendly training log app (`assets/fitness-coach-log.html`) imports validated weekly JSON plans. Features:
 - Session logging (reps, time, distance, mobility)
 - Vitals tracking (energy, sleep, stress, RPE, weight)
 - Pain/injury tracking

@@ -1,8 +1,0 @@
-interface:
-  display_name: "Fitness Coach"
-  short_description: "Coach fitness con profili e piani progressivi"
-  brand_color: "#16A34A"
-  default_prompt: "Use $fitness-coach to review my current training profile and continue coaching from the active plan."
-
-policy:
-  allow_implicit_invocation: true

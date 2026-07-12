@@ -1,0 +1,28 @@
+---
+name: commands
+description: List portable project skills and route to smallest matching skill.
+---
+
+## purpose
+Route user intent to one focused skill.
+
+## load
+- `core/KERNEL.md`
+- `core/LOAD_ORDER.md`
+- `.ai-project/local/project/PROJECT_INDEX.md`
+
+## scope
+- Skill discovery only.
+
+## deny
+- Do not edit files.
+- Do not load roadmap layers.
+
+## procedure
+1. Match request to smallest skill.
+2. If the user asks to plan a broad feature or split work into atomic tasks, select `feature-plan`.
+3. If task spans layers, state needed skills in order.
+4. Load only selected skill.
+
+## done
+- Selected skill or clear no-skill fallback reported.
