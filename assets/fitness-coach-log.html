@@ -5,214 +5,190 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f0f0f">
+<meta name="theme-color" content="#372d29">
 <title>Training Log</title>
 <style>
-  :root {
-    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #2e2e2e;
-    --accent: #e8ff47; --accent2: #47b8ff; --text: #f0f0f0; --text2: #888;
-    --danger: #ff4747; --success: #47ff8a; --warn: #ff9f47;
-    --radius: 10px; --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
-
-  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 16px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
-  .header-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
-  .header-week { font-size: 12px; color: var(--accent); font-weight: 600; background: rgba(232,255,71,0.12); padding: 3px 9px; border-radius: 20px; }
-
-  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; position: sticky; top: 53px; z-index: 99; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { flex: none; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .page { display: none; padding: 16px; }
-  .page.active { display: block; }
-
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
-  .card-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-
-  .session-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--surface2); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; border: 1px solid var(--border); }
-  .session-name { font-size: 15px; font-weight: 700; }
-  .session-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .session-done { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; flex-shrink: 0; }
-  .session-done.checked { background: var(--success); border-color: var(--success); color: #000; }
-
-  .info-pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; color: var(--accent2); border: 1px solid rgba(71,184,255,0.3); background: rgba(71,184,255,0.08); margin-bottom: 10px; }
-
-  .exercise-block { background: var(--surface2); border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--border); }
-  .ex-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
-  .ex-check { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); background: transparent; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; margin-top: 1px; }
-  .ex-check.checked { background: var(--accent); border-color: var(--accent); }
-  .ex-check.checked::after { content: '✓'; font-size: 13px; font-weight: 800; color: #000; }
-  .ex-info { flex: 1; }
-  .ex-name { font-size: 14px; font-weight: 700; }
-  .ex-prescribed { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .ex-rest { font-size: 11px; font-weight: 600; color: var(--warn); margin-top: 4px; }
-
-  .ex-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
-  .field-group { display: flex; flex-direction: column; gap: 4px; }
-  .field-label { font-size: 10px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-  .field-input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; font-family: var(--font); padding: 7px 9px; width: 100%; outline: none; transition: border-color 0.15s; }
-  .field-input:focus { border-color: var(--accent); }
-  .field-input.rpe:focus { border-color: var(--accent2); }
-  textarea.field-input { min-height: 52px; resize: none; font-size: 13px; }
-
-  .vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .vital-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
-  .vital-label { font-size: 10px; color: var(--text2); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; }
-  .vital-scale { display: flex; gap: 4px; }
-  .scale-btn { flex: 1; height: 28px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
-  .scale-btn.active-energy { background: var(--accent); border-color: var(--accent); color: #000; }
-  .scale-btn.active-sleep { background: var(--accent2); border-color: var(--accent2); color: #000; }
-  .scale-btn.active-stress { background: var(--danger); border-color: var(--danger); color: #fff; }
-  .scale-btn.active-rpe { background: var(--warn); border-color: var(--warn); color: #000; }
-
-  .pain-toggle { display: flex; gap: 8px; margin-top: 8px; }
-  .toggle-btn { flex: 1; padding: 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center; }
-  .toggle-btn.active-no { background: var(--success); border-color: var(--success); color: #000; }
-  .toggle-btn.active-yes { background: var(--danger); border-color: var(--danger); color: #fff; }
-
-  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: var(--radius); border: none; font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: all 0.15s; margin-top: 10px; }
-  .btn-primary { background: var(--accent); color: #000; }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-danger { background: rgba(255,71,71,0.15); color: var(--danger); border: 1px solid var(--danger); }
-
-  .report-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; font-size: 12px; line-height: 1.6; font-family: 'SF Mono','Fira Code',monospace; white-space: pre-wrap; word-break: break-word; color: #b0ffb0; margin-top: 10px; max-height: 400px; overflow-y: auto; }
-
-  .week-config { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .week-config label { font-size: 13px; color: var(--text2); font-weight: 600; flex-shrink: 0; }
-  .week-config input { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-size: 13px; padding: 7px 10px; flex: 1; font-family: var(--font); outline: none; }
-
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; padding: 8px 0 env(safe-area-inset-bottom,8px); z-index: 200; }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; cursor: pointer; color: var(--text2); font-size: 10px; font-weight: 600; transition: color 0.15s; }
-  .nav-item.active { color: var(--accent); }
-  .nav-icon { font-size: 20px; }
-
-  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 18px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; pointer-events: none; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .sep { height: 1px; background: var(--border); margin: 14px 0; }
+:root{--bg:#372d29;--panel:#2b2723;--raised:#413632;--inset:#2e2420;--line:#504431;--line-hover:#645743;--accent:#ba945f;--accent-hover:#e0ba86;--text:#ccc2b7;--muted:#b2a699;--faint:#868074;--warn:#e77a59;--danger:#c72626;--selection:#6154508f;--r:5px;--font:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--selection)}
+body{min-height:100vh;background:var(--bg);color:var(--text);font:14px/1.4 var(--font)}
+button,input,textarea{font:inherit}
+.header,.tabs{background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(12px)}
+.header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--line)}
+.header-title,.header-actions{display:flex;align-items:center}.header-title{gap:7px;font-weight:650;letter-spacing:-.2px}.header-actions{gap:7px}.header-week,.info-pill{color:var(--accent);font-size:11px;font-weight:650}
+.header-week{padding:2px 7px;border:1px solid var(--line);border-radius:99px}
+.header-function-btn{display:flex;width:28px;height:28px;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:var(--r);background:var(--raised);color:var(--muted);cursor:pointer}.header-function-btn:hover,.header-function-btn.active{border-color:var(--accent);color:var(--accent)}
+.icon{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}.header-title .icon{font-size:17px}.btn .icon{font-size:16px}.card-title .icon,.vital-label .icon,.info-pill .icon,.ex-rest .icon{font-size:12px}
+.tabs{position:sticky;top:42px;z-index:99;display:flex;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:8px 14px;border-bottom:1px solid transparent;color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}.tab:hover{background:var(--line-hover);color:var(--text)}.tab.active{border-color:var(--accent);color:var(--accent)}
+.page{display:none;padding:12px}.page.active{display:block}
+.card,.session-header,.exercise-block,.vital-block{border:1px solid var(--line);border-radius:var(--r)}
+.card{margin-bottom:8px;padding:11px;background:var(--panel)}
+.card-title,.field-label,.vital-label{color:var(--muted);font-size:10px;font-weight:650;letter-spacing:.55px;text-transform:uppercase}
+.card-title{display:flex;align-items:center;gap:5px;margin-bottom:9px}
+.field-label,.vital-label{display:flex;align-items:center;gap:4px}
+.session-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;padding:10px 11px;background:var(--raised);cursor:pointer}
+.session-name{font-size:14px;font-weight:650}.session-meta,.ex-prescribed{margin-top:2px;color:var(--muted);font-size:11px}
+.session-done,.ex-check{flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);cursor:pointer}
+.session-done{width:24px;height:24px;border-radius:50%;font-size:12px}.session-done.checked,.toggle-btn.active-no{border-color:var(--accent);background:var(--accent);color:var(--inset)}
+.info-pill{display:inline-flex;align-items:center;gap:4px;margin-bottom:8px;padding:3px 7px;border:1px solid var(--line);border-radius:99px;color:var(--accent)}
+.exercise-block{margin-bottom:6px;padding:9px;background:var(--raised)}
+.ex-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}.ex-check{width:20px;height:20px;margin-top:1px;border-radius:3px;background:transparent}.ex-check.checked{border-color:var(--accent);background:var(--accent)}.ex-check.checked::after{width:8px;height:4px;border-bottom:2px solid var(--bg);border-left:2px solid var(--bg);content:'';transform:rotate(-45deg) translate(1px,-1px)}
+.ex-info{flex:1}.ex-name{font-size:13px;font-weight:650}.ex-rest{display:flex;align-items:center;gap:4px;margin-top:3px;color:var(--warn);font-size:10px;font-weight:600}
+.ex-fields,.vitals-grid{display:grid;gap:6px}.ex-fields{grid-template-columns:minmax(0,30fr) minmax(0,20fr) minmax(0,45fr);margin-top:7px}.vitals-grid{grid-template-columns:1fr 1fr}
+.field-group{display:flex;min-width:0;flex-direction:column;gap:3px}.field-input{width:100%;min-width:0;border:1px solid var(--line);border-radius:3px;outline:0;background:var(--inset);color:var(--text)}
+.field-input{padding:6px 8px;font-size:13px}.field-input::placeholder{color:var(--faint)}.field-input:hover{border-color:var(--line-hover)}.field-input:focus,.field-input.rpe:focus{border-color:var(--accent)}textarea.field-input{min-height:48px;resize:none}
+.vital-block{padding:8px;background:var(--raised)}.vital-label{margin-bottom:5px}.vital-scale,.pain-toggle{display:flex;gap:4px}
+.scale-btn,.toggle-btn{display:flex;flex:1;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:3px;background:var(--inset);color:var(--muted);font-size:10px;font-weight:600;cursor:pointer}
+.scale-btn:hover,.toggle-btn:hover,.btn-secondary:hover{border-color:var(--line-hover)}.scale-btn{height:25px}.scale-btn.active-energy,.scale-btn.active-sleep,.scale-btn.active-rpe{border-color:var(--accent);background:var(--accent);color:var(--inset)}.scale-btn.active-stress,.toggle-btn.active-yes{border-color:var(--warn);background:var(--warn);color:var(--inset)}
+.pain-toggle{margin-top:7px}.toggle-btn{gap:4px;padding:7px;font-size:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;padding:10px;border:1px solid transparent;border-radius:var(--r);font-size:13px;font-weight:650;cursor:pointer}.btn:active{transform:translateY(1px)}.btn-primary{background:var(--accent);color:var(--inset)}.btn-primary:hover{background:var(--accent-hover)}.btn-secondary{border-color:var(--line);background:var(--raised);color:var(--text)}.btn-danger{border-color:var(--danger);background:transparent;color:var(--danger)}.btn-danger:hover{background:var(--danger);color:var(--text)}
+.toast{position:fixed;bottom:18px;left:50%;z-index:999;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--raised);font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;opacity:0;transform:translate(-50%,12px);transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+.import-error{margin-top:8px;color:var(--danger);font-size:12px;line-height:1.4}
+.report-help{margin:9px 0;color:var(--muted);font-size:12px;line-height:1.45}.empty-state{padding:32px 16px;color:var(--muted);text-align:center}.empty-icon{margin-bottom:7px;font-size:30px}.empty-copy{font-size:13px;line-height:1.45}.weight-field{margin-top:8px}.weight-field .field-label{margin-bottom:4px}.pain-detail,.mobility-note{margin-top:7px}.mobility{border-color:var(--accent);background:var(--inset)}.mobility .ex-check{border-color:var(--accent)}.mobility .ex-name{color:var(--accent)}
+@media(max-width:520px){.ex-fields{gap:4px}.field-input{padding-inline:6px}}
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <symbol id="icon-dumbbell" viewBox="0 0 24 24"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"/><path d="m2.5 21.5 1.4-1.4"/><path d="m20.1 3.9 1.4-1.4"/><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"/><path d="m9.6 14.4 4.8-4.8"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="icon-folder-open" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></symbol>
+  <symbol id="icon-trash-2" viewBox="0 0 24 24"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></symbol>
+  <symbol id="icon-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></symbol>
+  <symbol id="icon-brain" viewBox="0 0 24 24"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></symbol>
+  <symbol id="icon-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="icon-weight" viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z"/></symbol>
+  <symbol id="icon-bandage" viewBox="0 0 24 24"><path d="M10 10.01h.01"/><path d="M10 14.01h.01"/><path d="M14 10.01h.01"/><path d="M14 14.01h.01"/><path d="M18 6v12"/><path d="M6 6v12"/><rect x="2" y="6" width="20" height="12" rx="2"/></symbol>
+  <symbol id="icon-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></symbol>
+  <symbol id="icon-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="icon-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
+</svg>
+
 <div class="header">
-  <div class="header-title">🏋 Training Log</div>
-  <div class="header-week" id="weekBadge">W—</div>
+  <div class="header-title"><svg class="icon" aria-hidden="true"><use href="#icon-dumbbell"></use></svg>Training Log</div>
+  <div class="header-actions">
+    <div class="header-week" id="weekBadge">W—</div>
+    <button class="header-function-btn" id="functionsButton" type="button" aria-label="Apri Funzioni" title="Funzioni" onclick="showPage('functions')"><svg class="icon" aria-hidden="true"><use href="#icon-settings"></use></svg></button>
+  </div>
 </div>
 
 <div class="tabs" id="tabBar"></div>
 <div id="pagesContainer"></div>
 
-<!-- REPORT PAGE -->
-<div class="page" id="page-report">
+<div class="page" id="page-functions">
   <div class="card">
-    <div class="card-title">📤 Report Settimanale</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">Genera il report, copialo e incollalo in chat col coach ogni domenica.</p>
-    <button class="btn btn-primary" onclick="generateReport()">📋 Genera Report</button>
-    <button class="btn btn-secondary" onclick="copyReport()" style="margin-top:6px">📎 Copia Report</button>
-    <button class="btn btn-secondary" onclick="downloadReport()" style="margin-top:6px">⬇️ Scarica .txt</button>
-    <div id="reportOutput"></div>
-  </div>
-  <div class="card">
-    <div class="card-title">⚙️ Dati Settimana</div>
-    <div class="week-config"><label>Settimana #</label><input type="number" id="weekNum" min="1" max="52" value="1" oninput="saveConfig()"></div>
-    <div class="week-config"><label>Nome</label><input type="text" id="userName" placeholder="Il tuo nome" oninput="saveConfig()"></div>
-    <div class="week-config"><label>Obiettivo</label><input type="text" id="userGoal" placeholder="es. Front lever + massa" oninput="saveConfig()"></div>
-    <div class="sep"></div>
-    <button class="btn btn-danger" onclick="clearWeekData()">🗑 Azzera dati settimana</button>
+    <div class="card-title"><svg class="icon" aria-hidden="true"><use href="#icon-settings"></use></svg>Funzioni</div>
+    <button class="btn btn-secondary" id="changePlanButton" onclick="openPlanFile()"><svg class="icon" aria-hidden="true"><use href="#icon-folder-open"></use></svg>Carica scheda JSON</button>
+    <input type="file" id="planFile" accept=".json,application/json" hidden onchange="importPlanFile(this.files[0]);this.value=''">
+    <div class="import-error" id="importError" role="alert"></div>
+    <p class="report-help">Scarica il report e invialo al coach ogni domenica.</p>
+    <button class="btn btn-primary" onclick="downloadReport()"><svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg>Scarica report</button>
+    <button class="btn btn-danger" onclick="clearWeekData()"><svg class="icon" aria-hidden="true"><use href="#icon-trash-2"></use></svg>Azzera dati settimana</button>
   </div>
 </div>
 
-<div class="bottom-nav">
-  <div class="nav-item active" onclick="showNav('train')" id="nav-train"><div class="nav-icon">💪</div><span>Allenamento</span></div>
-  <div class="nav-item" onclick="showNav('report')" id="nav-report"><div class="nav-icon">📊</div><span>Report</span></div>
-</div>
 <div class="toast" id="toast"></div>
 
+<script id="week-plan-data" type="application/json">__WEEK_PLAN_JSON__</script>
 <script>
-let config = { weekNum:1, userName:'', userGoal:'' };
+let config = { weekNum:1, userName:'' };
 let sessions = [];
 let logs = {};
-let lastReport = '';
-const PLAN_ID = 'W1'; // coach aggiorna questo valore ad ogni nuova scheda
-const STORAGE_KEY = 'fitness_log_v3_' + PLAN_ID;
+let STORAGE_KEY = null;
+let activePlan = null;
+const LAST_PLAN_KEY = 'fitness_log_v4_last_plan';
+const $=id=>document.getElementById(id);
+const newExLog=()=>({done:false,done_val:'',rpe:'',note:''});
+const newSessionLog=()=>({done:false,exLogs:{},vitals:{},pain:null,painNote:'',sessionNote:''});
+const icon=name=>`<svg class="icon" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
 
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify({config,sessions,logs})); }
+function planKey(plan) { return 'fitness_log_v4_'+plan.plan.id+'_W'+plan.week.number; }
+function openPlanFile() { $('planFile').click(); }
+
+function save() { if(STORAGE_KEY)localStorage.setItem(STORAGE_KEY, JSON.stringify({logs})); }
 function load() {
-  try { const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.config)config=d.config; if(d.sessions)sessions=d.sessions; if(d.logs)logs=d.logs; } catch(e){}
-  document.getElementById('weekNum').value=config.weekNum||1;
-  document.getElementById('userName').value=config.userName||'';
-  document.getElementById('userGoal').value=config.userGoal||'';
-  document.getElementById('weekBadge').textContent='W'+(config.weekNum||'—');
+  try {
+    const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    const oldLogs=stored.logs&&typeof stored.logs==='object'?stored.logs:{};
+    logs={};
+    sessions.forEach(s=>{
+      const old=oldLogs[s.id]&&typeof oldLogs[s.id]==='object'?oldLogs[s.id]:{};
+      logs[s.id]={
+        done:old.done===true,
+        exLogs:{},
+        vitals:old.vitals&&typeof old.vitals==='object'?old.vitals:{},
+        pain:typeof old.pain==='boolean'?old.pain:null,
+        painNote:typeof old.painNote==='string'?old.painNote:'',
+        sessionNote:typeof old.sessionNote==='string'?old.sessionNote:''
+      };
+      const oldExLogs=old.exLogs&&typeof old.exLogs==='object'?old.exLogs:{};
+      s.exercises.forEach(ex=>{
+        const entry=oldExLogs[ex.id]&&typeof oldExLogs[ex.id]==='object'?oldExLogs[ex.id]:{};
+        logs[s.id].exLogs[ex.id]={done:entry.done===true,done_val:entry.done_val||'',rpe:entry.rpe||'',note:entry.note||''};
+      });
+    });
+  } catch(e) { console.error('Impossibile leggere i log salvati:',e); logs={}; }
+  $('weekBadge').textContent='W'+(config.weekNum||'—');
 }
-function saveConfig() {
-  config.weekNum=parseInt(document.getElementById('weekNum').value)||1;
-  config.userName=document.getElementById('userName').value;
-  config.userGoal=document.getElementById('userGoal').value;
-  document.getElementById('weekBadge').textContent='W'+config.weekNum;
-  save();
-}
-function uid() { return '_'+Math.random().toString(36).slice(2,9); }
 function esc(s) { if(s==null)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+function arg(s) { return esc(JSON.stringify(String(s))); }
+function showToast(msg) { const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 
 function buildTrainingPages() {
-  const tabBar=document.getElementById('tabBar');
-  const container=document.getElementById('pagesContainer');
+  const tabBar=$('tabBar');
+  const container=$('pagesContainer');
   tabBar.querySelectorAll('.tab[data-sid]').forEach(t=>t.remove());
   container.querySelectorAll('.page[data-sid]').forEach(p=>p.remove());
   if (!sessions.length) {
-    if (!document.getElementById('page-train-empty')) {
-      const empty=document.createElement('div'); empty.className='page active'; empty.id='page-train-empty';
-      empty.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:36px;margin-bottom:10px">📋</div><div style="font-size:14px;line-height:1.5">Piano non ancora caricato.<br>Il coach genererà questo file con il tuo piano personalizzato.</div></div>`;
-      container.insertBefore(empty,container.firstChild);
-    }
     return;
   }
-  document.getElementById('page-train-empty')?.remove();
 
   sessions.forEach((s,si)=>{
-    if (!logs[s.id]) logs[s.id]={done:false,exLogs:{},vitals:{},pain:null,painNote:'',sessionNote:''};
-    (s.exercises||[]).forEach(ex=>{ if(!logs[s.id].exLogs[ex.id]) logs[s.id].exLogs[ex.id]={done:false,done_val:'',rpe:'',note:''}; });
+    if (!logs[s.id]) logs[s.id]=newSessionLog();
+    (s.exercises||[]).forEach(ex=>{ if(!logs[s.id].exLogs[ex.id]) logs[s.id].exLogs[ex.id]=newExLog(); });
 
     const tab=document.createElement('div'); tab.className='tab'; tab.dataset.sid=s.id;
     tab.textContent=(s.day?s.day+' · ':'')+( s.name||'S'+(si+1));
-    tab.onclick=()=>showNav('sess-'+s.id);
+    tab.onclick=()=>showPage('sess-'+s.id);
     tabBar.appendChild(tab);
 
     const page=document.createElement('div'); page.className='page'; page.id='page-sess-'+s.id; page.dataset.sid=s.id;
     const log=logs[s.id];
     page.innerHTML=`
-      <div class="session-header" onclick="toggleSessionDone('${s.id}')">
+      <div class="session-header" onclick="toggleSessionDone(${arg(s.id)})">
         <div><div class="session-name">${esc(s.name||'Sessione '+(si+1))}</div>
         <div class="session-meta">${s.day?esc(s.day)+' · ':''}W${config.weekNum}</div></div>
-        <div class="session-done ${log.done?'checked':''}" id="sdone-${s.id}">${log.done?'✓':''}</div>
+        <div class="session-done ${log.done?'checked':''}" id="sdone-${esc(s.id)}">${log.done?icon('check'):''}</div>
       </div>
-      ${s.duration?`<div class="info-pill">⏱ Durata stimata: ~${esc(s.duration)} min</div>`:''}
+      ${s.duration?`<div class="info-pill">${icon('clock')}Durata stimata: ~${esc(s.duration)} min</div>`:''}
       <div class="card"><div class="card-title">Esercizi</div>${(s.exercises||[]).map(ex=>renderEx(s.id,ex)).join('')}</div>
       <div class="card"><div class="card-title">Parametri Sessione</div>
         <div class="vitals-grid">
-          ${renderScale(s.id,'energy','⚡ Energia pre','energy')}
-          ${renderScale(s.id,'sleep','😴 Sonno','sleep')}
-          ${renderScale(s.id,'stress','🧠 Stress','stress')}
-          ${renderScale(s.id,'rpe','🎯 RPE sessione','rpe')}
+          ${renderScale(s.id,'energy',icon('zap')+'Energia pre')}
+          ${renderScale(s.id,'sleep',icon('moon')+'Sonno')}
+          ${renderScale(s.id,'stress',icon('brain')+'Stress')}
+          ${renderScale(s.id,'rpe',icon('gauge')+'RPE sessione')}
         </div>
-        <div style="margin-top:10px"><div class="field-label" style="margin-bottom:5px">⚖️ Peso corporeo (kg)</div>
-        <input class="field-input" type="number" step="0.1" placeholder="es. 84.5" value="${esc(log.vitals?.weight||'')}" oninput="setVital('${s.id}','weight',this.value)"></div>
+        <div class="weight-field"><div class="field-label">${icon('weight')}Peso corporeo (kg)</div>
+        <input class="field-input" type="number" step="0.1" placeholder="es. 84.5" value="${esc(log.vitals?.weight||'')}" oninput="setVital(${arg(s.id)},'weight',this.value)"></div>
       </div>
-      <div class="card"><div class="card-title">🩹 Dolori / Fastidi</div>
+      <div class="card"><div class="card-title">${icon('bandage')}Dolori / Fastidi</div>
         <div class="pain-toggle">
-          <div class="toggle-btn ${log.pain===false?'active-no':''}" onclick="setPain('${s.id}',false)">✓ Nessuno</div>
-          <div class="toggle-btn ${log.pain===true?'active-yes':''}" onclick="setPain('${s.id}',true)">⚠️ Sì</div>
+          <div class="toggle-btn ${log.pain===false?'active-no':''}" onclick="setPain(${arg(s.id)},false)">${icon('check')}Nessuno</div>
+          <div class="toggle-btn ${log.pain===true?'active-yes':''}" onclick="setPain(${arg(s.id)},true)">${icon('triangle-alert')}Sì</div>
         </div>
-        <div id="painDetail-${s.id}" style="margin-top:8px;${log.pain?'':'display:none'}">
-          <input class="field-input" placeholder="Zona e tipo di fastidio..." value="${esc(log.painNote||'')}" oninput="setLog('${s.id}','painNote',this.value)">
+        <div class="pain-detail" id="painDetail-${esc(s.id)}" ${log.pain?'':'hidden'}>
+          <input class="field-input" placeholder="Zona e tipo di fastidio..." value="${esc(log.painNote||'')}" oninput="setLog(${arg(s.id)},'painNote',this.value)">
         </div>
       </div>
-      <div class="card"><div class="card-title">📝 Note Sessione</div>
-        <textarea class="field-input" placeholder="Come è andata? Dubbi, osservazioni..." oninput="setLog('${s.id}','sessionNote',this.value)">${esc(log.sessionNote||'')}</textarea>
+      <div class="card"><div class="card-title">${icon('notebook-pen')}Note Sessione</div>
+        <textarea class="field-input" placeholder="Come è andata? Dubbi, osservazioni..." oninput="setLog(${arg(s.id)},'sessionNote',this.value)">${esc(log.sessionNote||'')}</textarea>
       </div>`;
     container.appendChild(page);
   });
@@ -222,17 +198,17 @@ function renderEx(sid,ex) {
   const el=logs[sid]?.exLogs?.[ex.id]||{};
 
   if(ex.type==='mobility') {
-    return `<div class="exercise-block" style="border-color:rgba(71,184,255,0.25);background:rgba(71,184,255,0.05)">
+    return `<div class="exercise-block mobility">
       <div class="ex-header">
-        <div class="ex-check ${el.done?'checked':''}" id="excheck-${sid}-${ex.id}" onclick="toggleExDone('${sid}','${ex.id}')" style="border-color:var(--accent2)"></div>
+        <div class="ex-check ${el.done?'checked':''}" id="excheck-${esc(sid)}-${esc(ex.id)}" onclick="toggleExDone(${arg(sid)},${arg(ex.id)})"></div>
         <div class="ex-info">
-          <div class="ex-name" style="color:var(--accent2)">${esc(ex.name)}</div>
+          <div class="ex-name">${esc(ex.name)}</div>
           <div class="ex-prescribed">${esc(ex.prescribed)}</div>
         </div>
       </div>
-      <div class="field-group" style="margin-top:8px">
+      <div class="field-group mobility-note">
         <div class="field-label">Note mobilità</div>
-        <input class="field-input" placeholder="come è andata? miglioramento, rigidità, dolori..." value="${esc(el.note||'')}" oninput="setExLog('${sid}','${ex.id}','note',this.value)">
+        <input class="field-input" placeholder="come è andata? miglioramento, rigidità, dolori..." value="${esc(el.note||'')}" oninput="setExLog(${arg(sid)},${arg(ex.id)},'note',this.value)">
       </div>
     </div>`;
   }
@@ -242,161 +218,172 @@ function renderEx(sid,ex) {
   const ph=isTime?'es. 12s':isDist?'es. 200m':'es. 4×8 +12kg';
   return `<div class="exercise-block">
     <div class="ex-header">
-      <div class="ex-check ${el.done?'checked':''}" id="excheck-${sid}-${ex.id}" onclick="toggleExDone('${sid}','${ex.id}')"></div>
+      <div class="ex-check ${el.done?'checked':''}" id="excheck-${esc(sid)}-${esc(ex.id)}" onclick="toggleExDone(${arg(sid)},${arg(ex.id)})"></div>
       <div class="ex-info">
         <div class="ex-name">${esc(ex.name)}</div>
         <div class="ex-prescribed">${esc(ex.prescribed)}</div>
-        ${ex.restLabel?`<div class="ex-rest">⏸ Pausa: ${esc(ex.restLabel)}</div>`:''}
+        ${ex.restLabel?`<div class="ex-rest">${icon('pause')}Pausa: ${esc(ex.restLabel)}</div>`:''}
       </div>
     </div>
     <div class="ex-fields">
       <div class="field-group"><div class="field-label">${doneLabel}</div>
-        <input class="field-input" placeholder="${ph}" value="${esc(el.done_val||'')}" oninput="setExLog('${sid}','${ex.id}','done_val',this.value)"></div>
+        <input class="field-input" placeholder="${ph}" value="${esc(el.done_val||'')}" oninput="setExLog(${arg(sid)},${arg(ex.id)},'done_val',this.value)"></div>
       <div class="field-group"><div class="field-label">RPE</div>
-        <input class="field-input rpe" type="number" min="1" max="10" placeholder="1–10" value="${esc(el.rpe||'')}" oninput="setExLog('${sid}','${ex.id}','rpe',this.value)"></div>
+        <input class="field-input rpe" type="number" min="1" max="10" placeholder="1–10" value="${esc(el.rpe||'')}" oninput="setExLog(${arg(sid)},${arg(ex.id)},'rpe',this.value)"></div>
       <div class="field-group"><div class="field-label">Variazione</div>
-        <input class="field-input" placeholder="diverso dalla scheda..." value="${esc(el.note||'')}" oninput="setExLog('${sid}','${ex.id}','note',this.value)"></div>
+        <input class="field-input" placeholder="diverso dalla scheda..." value="${esc(el.note||'')}" oninput="setExLog(${arg(sid)},${arg(ex.id)},'note',this.value)"></div>
     </div>
   </div>`;
 }
 
-function renderScale(sid,key,label,type) {
+function renderScale(sid,key,label) {
   const val=logs[sid]?.vitals?.[key]||null;
-  const btns=[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="scale-btn ${val==n?'active-'+type:''}" onclick="setVital('${sid}','${key}',${n},'${type}')">${n}</div>`).join('');
-  return `<div class="vital-block"><div class="vital-label">${label}</div><div class="vital-scale" id="scale_${sid}_${key}">${btns}</div></div>`;
+  const btns=[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="scale-btn ${val==n?'active-'+key:''}" onclick="setVital(${arg(sid)},'${key}',${n})">${n}</div>`).join('');
+  return `<div class="vital-block"><div class="vital-label">${label}</div><div class="vital-scale" id="scale_${esc(sid)}_${key}">${btns}</div></div>`;
 }
 
-function toggleSessionDone(sid) { logs[sid].done=!logs[sid].done; const el=document.getElementById('sdone-'+sid); el.classList.toggle('checked',logs[sid].done); el.textContent=logs[sid].done?'✓':''; save(); }
-function toggleExDone(sid,exid) { logs[sid].exLogs[exid].done=!logs[sid].exLogs[exid].done; document.getElementById(`excheck-${sid}-${exid}`).classList.toggle('checked',logs[sid].exLogs[exid].done); save(); }
+function toggleSessionDone(sid) { logs[sid].done=!logs[sid].done; const el=$('sdone-'+sid); el.classList.toggle('checked',logs[sid].done); el.innerHTML=logs[sid].done?icon('check'):''; save(); }
+function toggleExDone(sid,exid) { logs[sid].exLogs[exid].done=!logs[sid].exLogs[exid].done; $(`excheck-${sid}-${exid}`).classList.toggle('checked',logs[sid].exLogs[exid].done); save(); }
 function setExLog(sid,exid,key,val) { logs[sid].exLogs[exid][key]=val; save(); }
 function setLog(sid,key,val) { logs[sid][key]=val; save(); }
-function setVital(sid,key,val,type) {
+function setVital(sid,key,val) {
   if(!logs[sid].vitals)logs[sid].vitals={};
   logs[sid].vitals[key]=val;
-  const scaleEl=document.getElementById('scale_'+sid+'_'+key);
+  const scaleEl=$('scale_'+sid+'_'+key);
   if(scaleEl){
     scaleEl.querySelectorAll('.scale-btn').forEach((btn,i)=>{
       btn.className='scale-btn';
-      if(i+1==val) btn.classList.add('active-'+(type||key));
+      if(i+1==val) btn.classList.add('active-'+key);
     });
   }
   save();
 }
 function setPain(sid,val) {
   logs[sid].pain=val;
-  const detail=document.getElementById('painDetail-'+sid); if(detail)detail.style.display=val?'':'none';
-  const page=document.getElementById('page-sess-'+sid);
+  const detail=$('painDetail-'+sid); if(detail)detail.hidden=!val;
+  const page=$('page-sess-'+sid);
   page.querySelectorAll('.toggle-btn').forEach(b=>{ b.className='toggle-btn';
     if(val===false&&b.textContent.includes('Nessuno'))b.classList.add('active-no');
     if(val===true&&b.textContent.includes('Sì'))b.classList.add('active-yes'); });
   save();
 }
 
-let currentPage='';
-function showNav(name) {
+function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if (name==='train') {
-    if(sessions.length){showNav('sess-'+sessions[0].id);return;}
-    document.getElementById('page-train-empty')?.classList.add('active'); currentPage='page-train-empty';
-    document.getElementById('nav-train').classList.add('active');
-  } else if (name==='report') {
-    document.getElementById('page-report').classList.add('active'); document.getElementById('nav-report').classList.add('active'); currentPage='page-report';
+  $('functionsButton').classList.toggle('active',name==='functions');
+  if (name==='functions') {
+    $('page-functions').classList.add('active');
   } else if (name.startsWith('sess-')) {
     const sid=name.replace('sess-','');
-    document.getElementById('page-'+name)?.classList.add('active'); currentPage='page-'+name;
-    document.querySelectorAll(`.tab[data-sid="${sid}"]`).forEach(t=>t.classList.add('active'));
-    document.getElementById('nav-train').classList.add('active');
-  }
-}
-
-function generateReport() {
-  const lines=[]; const w=config.weekNum||'?';
-  lines.push(`═══════════════════════════════`);
-  lines.push(`📋 WEEKLY LOG — W${w}`);
-  lines.push(`Atleta: ${config.userName||'Atleta'} | Obiettivo: ${config.userGoal||'—'}`);
-  lines.push(`═══════════════════════════════`); lines.push('');
-  let done=0;
-  sessions.forEach(s=>{
-    const log=logs[s.id]; if(!log)return;
-    if(log.done)done++;
-    lines.push(`┌─ ${s.day?s.day+' · ':''}${s.name||'Sessione'} ${log.done?'✓':'○'}${s.duration?' (~'+s.duration+' min)':''}`);
-    (s.exercises||[]).forEach(ex=>{
-      const el=log.exLogs?.[ex.id]||{};
-      if(ex.type==='mobility'){
-        lines.push(`│  ${el.done?'✓':'○'} ${ex.name}${el.note?' — '+el.note:''}`);
-        return;
-      }
-      let line=`│  ${el.done?'✓':'○'} ${ex.name}  [${ex.prescribed}]`;
-      if(el.done_val)line+=`  → ${el.done_val}`;
-      if(el.rpe)line+=`  RPE:${el.rpe}`;
-      if(ex.restLabel)line+=`  ⏸${ex.restLabel}`;
-      lines.push(line);
-      if(el.note)lines.push(`│     ↳ ${el.note}`);
-    });
-    const v=log.vitals||{};
-    const vl=[v.energy?`⚡${v.energy}`:null,v.sleep?`😴${v.sleep}`:null,v.stress?`🧠${v.stress}`:null,v.rpe?`🎯${v.rpe}`:null,v.weight?`⚖️${v.weight}kg`:null].filter(Boolean).join('  ');
-    if(vl)lines.push(`│  ${vl}`);
-    if(log.pain===true)lines.push(`│  🩹 ${log.painNote||'Dolore segnalato'}`);
-    else if(log.pain===false)lines.push(`│  🩹 Nessun dolore`);
-    if(log.sessionNote)lines.push(`│  📝 ${log.sessionNote}`);
-    lines.push(`└─────────────────────────────`); lines.push('');
-  });
-  lines.push(`Sessioni completate: ${done}/${sessions.length}`);
-  lines.push(`[Fine report W${w}]`);
-  lastReport=lines.join('\n');
-  document.getElementById('reportOutput').innerHTML=`<div class="report-box">${esc(lastReport)}</div>`;
-  showToast('Report generato');
-}
-
-async function copyReport() {
-  if(!lastReport)generateReport();
-  try{
-    await navigator.clipboard.writeText(lastReport);
-    showToast('Report copiato ✓');
-  }catch(e){
-    const box=document.querySelector('.report-box');
-    if(!box)return showToast('Genera prima il report');
-    const r=document.createRange();
-    r.selectNodeContents(box);
-    const s=getSelection();
-    s.removeAllRanges(); s.addRange(r);
-    showToast('Report selezionato: copia manuale');
+    $('page-'+name)?.classList.add('active');
+    document.querySelectorAll('.tab[data-sid]').forEach(t=>{if(t.dataset.sid===sid)t.classList.add('active');});
   }
 }
 
 function downloadReport() {
-  if(!lastReport)generateReport();
   const w=config.weekNum||'?';
-  const blob=new Blob([lastReport],{type:'text/plain'});
+  const lines=[`Settimana W${w} | Atleta: ${config.userName||'Atleta'}`];
+  sessions.forEach(s=>{
+    const log=logs[s.id]; if(!log)return;
+    lines.push('',`${s.day?s.day+' | ':''}${s.name||'Sessione'} | ${log.done?'completata':'non completata'}`);
+    lines.push('Esercizio\tPrescritto\tEseguito\tRPE\tNote');
+    (s.exercises||[]).forEach(ex=>{
+      const el=log.exLogs?.[ex.id]||{};
+      if(ex.type==='mobility')lines.push(`${ex.name}\t${ex.prescribed}\t${el.done?'completata':'non completata'}\t\t${el.note||''}`);
+      else lines.push(`${ex.name}\t${ex.prescribed}\t${el.done_val||''}\t${el.rpe||''}\t${el.note||''}`);
+    });
+    const v=log.vitals||{};
+    const vitals=[['Energia',v.energy],['Sonno',v.sleep],['Stress',v.stress],['RPE sessione',v.rpe],['Peso',v.weight&&v.weight+' kg']]
+      .filter(([,value])=>value!==undefined&&value!==null&&value!=='')
+      .map(([label,value])=>`${label}: ${value}`);
+    if(vitals.length)lines.push(`Parametri | ${vitals.join(' | ')}`);
+    if(log.pain!==null)lines.push(`Dolore: ${log.pain?(log.painNote||'segnalato'):'nessuno'}`);
+    if(log.sessionNote)lines.push(`Note sessione: ${log.sessionNote}`);
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url; a.download=`report-W${w}.txt`; a.click();
   URL.revokeObjectURL(url);
-  showToast('Report scaricato ✓');
+  showToast('Report scaricato');
 }
 
 function clearWeekData() {
   if(!confirm(`Azzerare tutti i dati di W${config.weekNum}? Il piano rimane invariato.`))return;
   logs={};
   sessions.forEach(s=>{
-    logs[s.id]={done:false,exLogs:{},vitals:{},pain:null,painNote:'',sessionNote:''};
-    (s.exercises||[]).forEach(ex=>{logs[s.id].exLogs[ex.id]={done:false,done_val:'',rpe:'',note:''};});
+    logs[s.id]=newSessionLog();
+    (s.exercises||[]).forEach(ex=>{logs[s.id].exLogs[ex.id]=newExLog();});
   });
   save(); buildTrainingPages();
-  document.getElementById('reportOutput').innerHTML='';
-  showToast('Dati settimana azzerati'); showNav('train');
+  showToast('Dati settimana azzerati'); showPage('functions');
 }
 
-function initDefaults() {
-  if(sessions.length)return;
-  sessions=[];
-  config.weekNum=1; config.userName='USER_NAME'; config.userGoal='USER_GOAL';
-  save();
+function showInvalidPlan(error) {
+  console.error('Piano settimanale non valido:',error);
+  const target=$('importError');
+  if(target)target.textContent='Scheda non valida: '+error.message;
+  else showToast('Scheda non valida: '+error.message);
 }
 
-load(); initDefaults(); buildTrainingPages(); showNav('train');
+function validatePlan(plan) {
+    if(plan?.schemaVersion!=='1.0'||typeof plan.plan?.id!=='string'||!plan.plan.id.trim()||
+      typeof plan.athlete?.name!=='string'||!plan.athlete.name.trim()||
+      !Number.isInteger(plan.week?.number)||plan.week.number<1||plan.week.number>53||
+      typeof plan.goal!=='string'||!plan.goal.trim()||!Array.isArray(plan.sessions)||!plan.sessions.length)
+      throw new Error('Campi principali mancanti o non validi');
+    const sessionIds=new Set();
+    plan.sessions.forEach(session=>{
+      if(typeof session?.id!=='string'||!session.id||sessionIds.has(session.id)||typeof session.name!=='string'||
+        typeof session.day!=='string'||typeof session.duration!=='string'||!Array.isArray(session.exercises))
+        throw new Error('Sessione non valida o ID duplicato');
+      sessionIds.add(session.id);
+      const exerciseIds=new Set();
+      session.exercises.forEach(ex=>{
+        if(typeof ex?.id!=='string'||!ex.id||exerciseIds.has(ex.id)||typeof ex.name!=='string'||
+          typeof ex.prescribed!=='string'||!['reps','time','dist','mobility'].includes(ex.type))
+          throw new Error('Esercizio non valido o ID duplicato');
+        exerciseIds.add(ex.id);
+      });
+    });
+    return plan;
+}
+
+function activatePlan(plan,clearCurrent=false) {
+    if(clearCurrent&&STORAGE_KEY)localStorage.removeItem(STORAGE_KEY);
+    activePlan=plan;
+    config={weekNum:plan.week.number,userName:plan.athlete.name};
+    sessions=plan.sessions;
+    STORAGE_KEY=planKey(plan);
+    localStorage.setItem(LAST_PLAN_KEY,JSON.stringify(plan));
+    load(); buildTrainingPages(); showPage('sess-'+sessions[0].id);
+    $('changePlanButton').innerHTML=icon('folder-open')+'Cambia scheda';
+    showToast('Scheda caricata: W'+plan.week.number);
+}
+
+async function importPlanFile(file) {
+  if(!file)return;
+  try {
+    const plan=validatePlan(JSON.parse(await file.text()));
+    const replacing=activePlan&&planKey(plan)!==planKey(activePlan);
+    if(replacing&&!confirm(`Sostituire W${activePlan.week.number} con W${plan.week.number}? I log della settimana attiva saranno cancellati.`))return;
+    activatePlan(plan,replacing);
+  } catch(error) { showInvalidPlan(error instanceof Error?error:new Error(String(error))); }
+}
+
+function initPlan() {
+  buildTrainingPages();
+  try {
+    const source=$('week-plan-data')?.textContent.trim();
+    const stored=localStorage.getItem(LAST_PLAN_KEY);
+    if(source&&source!==['__WEEK','_PLAN_JSON__'].join(''))return activatePlan(validatePlan(JSON.parse(source)));
+    if(stored)return activatePlan(validatePlan(JSON.parse(stored)));
+  } catch(error) { showInvalidPlan(error instanceof Error?error:new Error(String(error))); }
+  showPage('functions');
+}
+
+initPlan();
 </script>
 </body>
 </html>

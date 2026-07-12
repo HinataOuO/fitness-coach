@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "week-plan.schema.json",
+  "title": "Fitness Coach Weekly Plan",
+  "description": "Gli ID di piano, sessione ed esercizio devono essere deterministici e stabili. L'unicità degli ID di sessione e degli esercizi è un vincolo applicativo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "plan", "athlete", "week", "goal", "sessions"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "ID stabile; insieme al numero settimana definisce il namespace localStorage." }
+      }
+    },
+    "athlete": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "week": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1, "maximum": 53 }
+      }
+    },
+    "goal": { "type": "string", "minLength": 1 },
+    "sessions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "day", "duration", "exercises"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "day": { "type": "string", "minLength": 1 },
+          "duration": { "type": "string", "minLength": 1 },
+          "exercises": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "name", "prescribed", "type"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "name": { "type": "string", "minLength": 1 },
+                "prescribed": { "type": "string", "minLength": 1 },
+                "type": { "enum": ["reps", "time", "dist", "mobility"] },
+                "rest": { "type": "string" },
+                "restLabel": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "plan": {
+    "id": "plan-example-001"
+  },
+  "athlete": {
+    "name": "Atleta Esempio"
+  },
+  "week": {
+    "number": 1
+  },
+  "goal": "Forza generale e mobilità",
+  "sessions": [
+    {
+      "id": "session-example-001",
+      "name": "Full body",
+      "day": "Lunedì",
+      "duration": "45",
+      "exercises": [
+        {
+          "id": "exercise-reps-001",
+          "name": "Trazioni",
+          "prescribed": "4×5",
+          "type": "reps",
+          "restLabel": "120 s"
+        },
+        {
+          "id": "exercise-time-001",
+          "name": "Plank",
+          "prescribed": "3×30 s",
+          "type": "time",
+          "restLabel": "60 s"
+        },
+        {
+          "id": "exercise-dist-001",
+          "name": "Farmer walk",
+          "prescribed": "3×20 m",
+          "type": "dist",
+          "restLabel": "90 s"
+        },
+        {
+          "id": "exercise-mobility-001",
+          "name": "Mobilità spalle",
+          "prescribed": "2×8 lente",
+          "type": "mobility"
+        }
+      ]
+    }
+  ]
+}
