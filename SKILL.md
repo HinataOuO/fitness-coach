@@ -1,94 +1,102 @@
 ---
 name: fitness-coach
 description: >
-  Expert coach for bodyweight, calisthenics, street lifting, gymnastics
-  skills, gym training, hypertrophy, strength, fat loss, recomposition,
-  running, endurance, recovery and mobility. Use for any question about
-  training, physique or physical performance, including requests for a
-  program, progressions, periodization, deloads, pain or injury-aware
-  adaptations. Trigger explicitly with `$fitness-coach ATHLETE` or
-  implicitly from a fitness question.
+  Dispatcher for athlete profiling, planning, analysis and plan delivery.
+  Use only with `$fitness-coach <skill> <Nome>`, where skill is `profile`,
+  `planning`, `analyze` or `plan`.
 ---
 
-# Fitness Coach dispatcher
+## purpose
 
-Coach Italian-speaking users directly and concisely. Use files relative to
-this skill directory.
+Route one explicit athlete and fitness skill to the matching internal skill.
+Do not provide fitness coaching directly.
 
-## Athlete routing
+Public syntax:
 
-- Require the athlete name before reading persisted data. Preferred trigger:
-  `$fitness-coach <athlete> <request>`.
-- Resolve `<athlete>` only to an existing top-level athlete directory, such as
-  `Pietro/` or `Giulia/`. Never read multiple profiles to infer identity.
-- If the name is absent or ambiguous, ask which athlete to use before reading
-  any profile. A generic question that needs no persisted data may be answered
-  without selecting an athlete.
-- For a new athlete, collect the name first, then create `<athlete>/` only
-  after profiling. Ask before replacing or merging an existing profile.
+`$fitness-coach <skill> <Nome>`
 
-## Minimal load
+Valid skills: `profile`, `planning`, `analyze`, `plan`.
 
-For a returning athlete, read only:
+## load
 
-1. `<athlete>/profile-core.md`;
-2. `<athlete>/profile-plan-current.md` when the request depends on the active
-   plan or current week.
+Validate `<skill>` before inspecting `Profiles/` or reading any athlete file.
 
-Do not preload references from profile flags. Read additional files only when
-the current request requires them:
+After validation, route exactly as follows:
 
-| Request | Load |
+| Skill | Internal skill |
 |---|---|
-| New athlete/profiling | `phases/profiling.md`; `references/profile-schema.md` only when writing |
-| Build/revise plan | `phases/planning.md`, `references/goal-compatibility.md`, relevant gym/bodyweight progression |
-| Weekly plan JSON or any HTML plan/card/week request | `.agents/skills/generate-week-plan/SKILL.md`; require athlete and week before writing |
-| Weekly log/check-in | `phases/monitoring.md`; only latest required log section |
-| History/archive/export | matching athlete file only |
-| Pain/injury | `references/common-injuries.md` |
-| Fatigue/plateau/deload | `references/recovery-and-deload.md` |
-| Mobility/flexibility | `references/mobility-and-flexibility.md` |
-| Running/cardio/HIIT | `references/running-and-endurance.md` |
-| Legs/glutes | `references/legs-and-glutes.md` |
-| Jumps/plyometrics | `references/lower-body-bodyweight-plyometrics.md` |
-| Photo analysis | `references/visual-technical-analysis.md` |
-| Scientific rationale | `references/scientific-sources.md` if needed |
-| Level 3+ programming | `references/advanced-programming.md` only for advanced programming decisions |
+| `profile` | `.agents/skills/fitness-coach-profile/SKILL.md` |
+| `planning` | `.agents/skills/fitness-coach-planning/SKILL.md` |
+| `analyze` | `.agents/skills/fitness-coach-analyze/SKILL.md` |
+| `plan` | `.agents/skills/fitness-coach-plan/SKILL.md` |
 
-Load no unrelated reference. Do not load full log history to find the latest
-report: search headings and read only the final relevant section.
+The selected internal skill owns all further reads and protocol. Except for
+the export action below, this dispatcher must not open profiles, plans,
+history, artifacts or references.
 
-Any request for a training card, plan or week in HTML format must route through
-`generate-week-plan`. If athlete or week is missing, ask for the missing value;
-never create HTML directly.
+## scope
 
-## Persisted updates
+- Accept complete, case-sensitive athlete directory basenames, including
+  names containing spaces.
+- Allow `profile <Nome>` when `<Nome>` is a safe new athlete name without an
+  existing directory.
+- Require an existing immediate `Profiles/<Nome>/` directory for `planning`,
+  `analyze` and `plan`.
+- Support export after a valid route with
+  `$fitness-coach <skill> <Nome> export`. Treat trailing `esporta profilo` and
+  `/fitness-export` as equivalent export actions.
 
-- After a weekly log, update current weight, current benchmarks, `Last log`
-  and `Plan week` in `<athlete>/profile-core.md`; append the summary to
-  `<athlete>/profile-log-history.md`.
-- Keep only baseline, current value and latest date for each benchmark in core.
-  Preserve intermediate benchmark history in the log.
-- Before revising a plan, append the old plan to
-  `<athlete>/profile-plans-archive.md`; then replace the current plan and reset
-  its week.
-- Read `references/profile-schema.md` only when creating, importing or
-  structurally repairing profile files.
+## deny
 
-## Entry and export
+- Missing or invalid skill: output only
+  `$fitness-coach <skill> <Nome>` and the four valid values `profile`,
+  `planning`, `analyze`, `plan`. Do not inspect `Profiles/`.
+- Missing athlete name after a valid skill: list only basenames of immediate
+  directories under `Profiles/`, without reading their files. If `Profiles/`
+  is missing or has no immediate directories, report that no athletes are
+  available.
+- Reject absolute paths; names containing `/` or `\`; names equal to `.` or
+  `..`; traversal; partial or fuzzy matches; case-insensitive matches; and any
+  inferred identity.
+- Do not diagnose medical conditions or advise drugs or steroids. Route
+  detailed nutrition planning to `meal-planner`.
+- Do not answer generic fitness requests without a valid route. Request the
+  canonical command and athlete; provide no technical coaching.
 
-Greet returning athletes using their name and current week. Ask for a log or
-updates only when relevant. If `Last log` is over 14 days old, perform the
-sleep/stress/status check from `phases/monitoring.md` before progression.
+## procedure
 
-On `esporta profilo`, `export` or `/fitness-export`, require the athlete name,
-then output only that athlete's core and active plan inside the existing
-`=== PROFILO ESPORTATO ===` / `=== PIANO ATTIVO ===` block. Tell the user to
-paste it into a new chat with `$fitness-coach <athlete>`.
+1. Parse and validate `<skill>`. On failure, apply the skill error in `deny`
+   and stop.
+2. Parse the complete `<Nome>`, excluding a recognized trailing export action.
+3. If `<Nome>` is absent, apply the missing-athlete behavior in `deny` and
+   stop.
+4. Apply every name rejection in `deny` before filesystem lookup.
+5. Match `<Nome>` exactly to one real, immediate directory under `Profiles/`.
+   Do not search recursively, normalize, guess or select a near match.
+6. If no directory matches, continue only for `profile`; for every other
+   skill, report that the athlete does not exist and stop.
+7. Without an export action, open the mapped internal `SKILL.md` and hand off
+   all remaining reads and behavior to it.
+8. With an export action, require the exact athlete directory and verify both
+   `Profiles/<Nome>/profile.md` and `Profiles/<Nome>/plan.md` exist before
+   reading either. If either is missing, report the missing file explicitly
+   and emit no export blocks. Otherwise read only those two files and output:
 
-## Boundaries
+   ```text
+   === PROFILO ESPORTATO ===
+   [contenuto di Profiles/<Nome>/profile.md]
+   === PIANO ATTIVO ===
+   [contenuto di Profiles/<Nome>/plan.md]
+   === FINE ESPORTAZIONE ===
+   ```
 
-Do not diagnose medical conditions or advise drugs/steroids. Route detailed
-nutrition plans to `meal-planner`. For web research, use peer-reviewed or
-authoritative primary sources and cite them. Be direct, non-judgmental and
-honest about timeframes; explain theory only when requested.
+For web research performed by a routed internal skill, use authoritative
+primary sources and cite them. Keep tone direct and non-judgmental.
+
+## done
+
+- Skill and athlete were validated in that order.
+- Exactly one internal skill received the request, or one complete isolated
+  export was produced.
+- No unrelated athlete data or dispatcher-owned fitness advice was read or
+  emitted.
