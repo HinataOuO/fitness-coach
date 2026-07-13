@@ -1,114 +1,106 @@
 # Fitness Coach Skill
 
-An expert fitness coaching system for Codex that provides personalized training plans, weekly monitoring, and evidence-based programming for bodyweight (calisthenics, street lifting, gymnastics) and gym-based training.
-
-## Overview
-
-The skill acts as a persistent, profile-aware coach. It stores user data (goals, level, injuries, training history) across sessions and adapts plans over time. It supports multiple user profiles simultaneously.
+Fitness Coach is a persistent, multi-athlete Codex coaching system for
+calisthenics, gym training, running and general athletic development. R2 uses
+an explicit command, four focused internal skills and athlete-local data.
 
 ## Usage
 
+```text
+$fitness-coach <skill> <Nome>
 ```
-$fitness-coach
+
+`<Nome>` is the exact, case-sensitive athlete directory name. Valid skills:
+
+| Skill | Responsibility |
+|---|---|
+| `profile` | Run the mandatory new-athlete interview and create the confirmed profile |
+| `planning` | Create the initial mother plan or replace an expired cycle after confirmation |
+| `analyze` | Validate one complete weekly report, rotate history and update confirmed current state |
+| `plan` | Build and publish the current validated weekly artifact, optionally as HTML |
+
+Examples:
+
+```text
+$fitness-coach profile Mario Rossi
+$fitness-coach planning Mario Rossi
+$fitness-coach analyze Mario Rossi
+$fitness-coach plan Mario Rossi
+$fitness-coach plan Mario Rossi export
 ```
 
-Invoke from any Codex session by mentioning `$fitness-coach` or by asking a fitness/training question. The skill auto-detects context (new user vs returning, which phase to enter) and guides the conversation accordingly.
+The dispatcher validates the skill before the athlete name and routes exactly
+one internal skill. It does not infer identity or answer generic coaching
+requests without a valid route.
 
-## Codex Command Skills
+## R2 Architecture
 
-Claude command workflows from `.claude/commands/` have Codex-native versions in `codex/skills/`:
-
-| Skill | Purpose |
-|-------|---------|
-| `$push` | Stage relevant files, commit, and push the current branch |
-| `$release` | Create a GitHub release with generated notes |
-| `$git-issue` | Fetch a GitHub issue and build a session plan |
-
-See `codex/README.md` for install notes.
-
-## Phases
-
-| Phase | Trigger | Description |
-|-------|---------|-------------|
-| **Profiling** | First use or explicit re-profiling | Collects biometric data, training history, goals, equipment, injuries, lifestyle |
-| **Planning** | After profiling or plan request | Builds a periodized weekly plan with exercises, loads, RPE, rest, mobility |
-| **Monitoring** | Weekly log submission | Processes session logs, adjusts progressions, flags plateaus or overreaching |
-
-## Features
-
-### Training Modalities
-- Bodyweight / calisthenics (push, pull, skill, lower progressions)
-- Gym hypertrophy, strength, fat loss, body recomposition
-- Running and cardio endurance integration
-- Lower body plyometrics
-
-### Programming
-- Linear, DUP, and block periodization
-- RPE-based autoregulation
-- Deload protocols and overreaching detection
-- 6–12 month periodization templates
-
-### Safety & Injury Management
-- Goal compatibility validation (flags incompatible objective combinations)
-- Injury-aware plan modification (suspends affected muscle groups)
-- Corrective exercise protocols for common injuries (shoulder, elbow, wrist, back, knee)
-- Mandatory mobility integration rules
-
-### Analysis
-- Visual/technical form analysis via photo protocol
-- Postural assessment checklists
-- Exercise-specific form cues (calisthenics and gym)
-
-### HTML Training Log
-One offline, mobile-friendly training log app (`assets/fitness-coach-log.html`) imports validated weekly JSON plans. Features:
-- Session logging (reps, time, distance, mobility)
-- Vitals tracking (energy, sleep, stress, RPE, weight)
-- Pain/injury tracking
-- Weekly report generation with clipboard export
-
-## File Structure
-
-```
+```text
 fitness-coach/
-├── SKILL.md                        # Main dispatcher and core protocol
-├── phases/
-│   ├── profiling.md                # User assessment protocol
-│   ├── planning.md                 # Plan construction rules
-│   └── monitoring.md               # Weekly log processing
+├── SKILL.md
+├── .agents/skills/
+│   ├── fitness-coach-profile/SKILL.md
+│   ├── fitness-coach-planning/SKILL.md
+│   ├── fitness-coach-analyze/SKILL.md
+│   └── fitness-coach-plan/SKILL.md
+├── Profiles/<Nome>/
+│   ├── profile.md
+│   ├── plan.md
+│   ├── artifacts/
+│   │   └── week-W<N>.{json,html}
+│   └── history/
+│       ├── last-week.md
+│       ├── weeks/
+│       │   └── W<N>-<data-report>.md
+│       └── plans/
+│           └── <cycle-start>-<duration>m.md
 ├── references/
-│   ├── goal-compatibility.md       # Goal matrix, volume limits, timelines
-│   ├── bodyweight-progressions.md  # Calisthenics progressive overload
-│   ├── gym-progressions.md         # Gym training parameters
-│   ├── advanced-programming.md     # Periodization, RPE, templates
-│   ├── recovery-and-deload.md      # Sleep, stress, deload protocols
-│   ├── common-injuries.md          # Injury management and correctives
-│   ├── mobility-and-flexibility.md # Stretching, CARs, foam rolling
-│   ├── running-and-endurance.md    # Cardio integration, HR zones
-│   ├── legs-and-glutes.md          # Lower body evidence-based guide
-│   ├── lower-body-bodyweight-plyometrics.md  # Plyometric progressions
-│   ├── visual-technical-analysis.md # Form analysis protocol
-│   └── scientific-sources.md       # ACSM, NSCA, research references
-├── profile/                        # Active user profile (git-ignored)
-│   ├── profile-core.md             # Biometrics, goals, injuries, level
-│   ├── profile-plan-current.md     # Active training plan
-│   └── profile-log-history.md      # Session and weekly logs
-└── assets/
-    └── fitness-coach-log.html      # Offline training log app
+├── assets/
+│   ├── week-plan.schema.json
+│   └── fitness-coach-log.html
+└── scripts/
+    └── generate_week_plan.py
 ```
 
-## User Levels
+Each athlete owns one canonical profile, one active mother plan, immutable
+per-file weekly and cycle history, and generated weekly artifacts. Athlete
+data is never selected by fuzzy matching.
 
-| Level | Label | Description |
-|-------|-------|-------------|
-| 1 | Beginner | No consistent training history |
-| 2 | Novice | 3–12 months consistent training |
-| 3 | Intermediate | 1–3 years, basic technique solid |
-| 4 | Advanced | 3+ years, advanced skills or heavy compound lifts |
+## Weekly Artifact Pipeline
 
-## Evidence Base
+The `plan` skill builds `Profiles/<Nome>/artifacts/week-W<N>.json` from the
+selected athlete's active state. JSON is canonical and must pass:
 
-Programming references cite ACSM, NSCA, WHO guidelines plus peer-reviewed hypertrophy and strength research (Schoenfeld, Krieger, Helms, Contreras, among others).
+```text
+python3 scripts/generate_week_plan.py <temp-json>
+```
 
-## Multi-User Support
+HTML is produced only when explicitly requested, from the same validated JSON:
 
-Multiple profiles can coexist in separate directories (e.g., `profile/` and `backupPietro/`). Profile directories are git-ignored by default to protect user data.
+```text
+python3 scripts/generate_week_plan.py <temp-json> --output <temp-html>
+```
+
+Publication is transactional. Failed validation or generation preserves prior
+artifacts byte-for-byte.
+
+## Athlete Levels
+
+Level assignment uses training history and demonstrated benchmarks, never
+years alone.
+
+| Level | Label | R2 definition |
+|---|---|---|
+| 1 | Beginner | 0–6 months, no base; basic motor patterns and low loads |
+| 2 | Novice | 6–18 months; linear progression works and technique is developing |
+| 3 | Intermediate | 1.5–3 years; periodization is needed and plateaus are common |
+| 4 | Advanced | 3–6 years; complex periodization and high specificity |
+| 5 | Elite | 6+ years and competitive; fully individualized programming |
+
+## Boundaries
+
+- Training plans integrate goal compatibility, recoverability, mobility,
+  progression, deload and injury-aware safety rules.
+- The coach does not diagnose medical conditions or advise drugs or steroids.
+- Detailed nutrition planning belongs to `meal-planner`.
+- Scientific research uses authoritative primary sources with citations.

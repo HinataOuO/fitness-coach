@@ -16,13 +16,15 @@ assignees: HinataOuO
 
 ## Proposed Approach
 
-<!-- Which files/phases/references would be involved? -->
+<!-- Which R2 command, internal skill, athlete path, or reference would be involved? -->
 
 ## Area
 
-- [ ] profiling phase
-- [ ] planning phase
-- [ ] monitoring phase
+- [ ] dispatcher / routing
+- [ ] profile skill
+- [ ] planning skill
+- [ ] analyze skill
+- [ ] plan / artifact generation
 - [ ] bodyweight progressions
 - [ ] gym progressions
 - [ ] running / endurance
@@ -39,4 +41,3 @@ assignees: HinataOuO
 - [x] P2-low
 
 ## Additional Notes
-

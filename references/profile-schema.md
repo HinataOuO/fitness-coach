@@ -144,29 +144,6 @@ Stores one completed mother plan per file. `<YYYY-MM-DD>` is the cycle start
 date and the suffix is its duration. Archived plans are immutable: never
 overwrite an existing destination. Stop and resolve the conflict first.
 
-## Manual R2 migration
-
-Migrate one explicitly selected athlete at a time:
-
-1. Create the canonical `Profiles/<Nome>/` structure.
-2. Copy `<Nome>/profile-core.md` to `profile.md` and
-   `<Nome>/profile-plan-current.md` to `plan.md`.
-3. Split `<Nome>/profile-log-history.md` into `history/last-week.md` and
-   immutable `history/weeks/W<N>-<YYYY-MM-DD>.md` files. Do not alter technical
-   text.
-4. Split `<Nome>/profile-plans-archive.md` into immutable
-   `history/plans/<YYYY-MM-DD>-<3|6|9|12>m.md` files. Do not alter technical
-   text.
-5. Verify source/destination week and plan counts, cycle dates, report dates,
-   `Plan start`, `Plan end`, `Plan duration`, `Plan week`, and `Last log`.
-6. Compare all contents, then remove the source files only after an exact
-   match.
-7. Repeat for the next athlete.
-
-Stop that athlete's migration if dates or cycle/week attribution are ambiguous,
-or if any destination already exists. Do not invent data, overwrite files,
-create aliases or symlinks, or add legacy fallbacks.
-
 ## Import/export block
 
 ```text

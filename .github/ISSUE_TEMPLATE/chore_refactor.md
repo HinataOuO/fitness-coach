@@ -16,14 +16,14 @@ assignees: HinataOuO
 
 ## Scope
 
-<!-- Which files/phases/references are involved? -->
+<!-- Which R2 skills, athlete paths, references, assets, or tooling are involved? -->
 
 ## Area
 
 - [ ] skill entry point (SKILL.md)
-- [ ] phases (profiling / planning / monitoring)
+- [ ] internal skills (profile / planning / analyze / plan)
 - [ ] references
-- [ ] user profiles
+- [ ] athlete structure (`Profiles/<Nome>/`)
 - [ ] assets
 - [ ] CI / tooling
 
@@ -34,4 +34,3 @@ assignees: HinataOuO
 - [x] P2-low
 
 ## Additional Notes
-

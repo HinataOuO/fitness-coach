@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Something in the skill behaves incorrectly — wrong output, broken phase, bad progression
+about: Something in an R2 command, internal skill, or athlete workflow behaves incorrectly
 title: "[BUG] "
 labels: bug, P1-high
 assignees: HinataOuO
@@ -26,14 +26,17 @@ assignees: HinataOuO
 
 ## Context
 
-- Phase: <!-- profiling / planning / monitoring -->
-- Skill file(s): <!-- e.g. phases/planning.md, references/gym-progressions.md -->
+- Command: <!-- e.g. $fitness-coach analyze Mario Rossi -->
+- Internal skill: <!-- profile / planning / analyze / plan -->
+- File(s): <!-- e.g. .agents/skills/fitness-coach-analyze/SKILL.md -->
 
 ## Area
 
-- [ ] profiling phase
-- [ ] planning phase
-- [ ] monitoring phase
+- [ ] dispatcher / routing
+- [ ] profile skill
+- [ ] planning skill
+- [ ] analyze skill
+- [ ] plan / artifact generation
 - [ ] progressions logic
 - [ ] injury handling
 - [ ] mobility/deload rules
@@ -46,4 +49,3 @@ assignees: HinataOuO
 - [ ] P2-low
 
 ## Additional Notes
-
