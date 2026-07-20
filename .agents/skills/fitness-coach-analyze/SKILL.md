@@ -8,141 +8,97 @@ description: >
 
 ## purpose
 
-Analyze one complete weekly report for the explicitly selected athlete. Keep
-every supplied diary field, publish the report as current weekly history,
-rotate the previous report without loss, and update only confirmed current
-state in `profile.md`. Never change the mother plan.
+Analyze one complete report for the explicitly selected athlete and active
+`Plan week: W<N>`. Preserve every diary field, rotate immutable history, update
+only confirmed current profile state, and never change the mother plan.
 
 ## load
 
-- Receive the already validated, case-sensitive `<Nome>` from the dispatcher.
-  Do not normalize, infer, enumerate or change it.
-- Read only `Profiles/<Nome>/profile.md` and `Profiles/<Nome>/plan.md` first.
-  Read `Profiles/<Nome>/history/last-week.md` only when it exists. Do not read
-  other profiles, weekly archives, plan archives or artifacts; archive paths
-  may be checked for existence without reading them.
-- Load `references/recovery-and-deload.md` only when the report shows unusual
-  fatigue, poor recovery, falling performance or a plateau.
-- Load `references/common-injuries.md` only when pain, injury, swelling,
-  weakness, numbness, tingling or an aggravating movement is reported.
-- Load `references/mobility-and-flexibility.md` only when mobility worsened,
-  cool-down adherence is poor or mobility feedback requires adaptation.
-- Load any other reference only when one explicit report datum makes it
-  necessary. For scientific explanations requested by the athlete, use
-  authoritative primary sources, cite them, and label uncertain or empirical
-  conclusions.
+- Receive the dispatcher's validated, case-sensitive `<Nome>`; never normalize,
+  infer, enumerate or change it.
+- First read only `Profiles/<Nome>/profile.md` and `plan.md`, retaining their
+  exact bytes. Check whether `history/last-week.md` exists. For W1, stop on
+  existence without reading its content; for W2+, read it exactly once.
+- Never read another profile, weekly/plan archive or artifact. Archive paths may
+  only be checked for existence.
+- Load `references/recovery-and-deload.md` only for unusual fatigue, poor
+  recovery, falling performance or possible plateau; `common-injuries.md` only
+  for pain, injury, swelling, weakness, numbness, tingling or aggravating
+  movement; `mobility-and-flexibility.md` only for worsened mobility, poor
+  cool-down adherence or mobility feedback requiring adaptation. Load another
+  reference only when one explicit datum requires it. Scientific explanations
+  requested by the athlete require cited authoritative primary sources and
+  uncertainty labels.
 
 ## scope
 
-- Accept one complete report for exactly the `Plan week: W<N>` recorded in the
-  selected profile, where `N >= 1`.
-- Compare planned and performed work, adherence, volume, RPE, performance,
-  sleep, stress, energy, pain, mobility, recovery and weight. Assess a plateau
-  only from at least two comparable weeks of stagnation.
-- When the report documents travel or an unplanned stop, assess its duration
-  and constraints, recommend an adapted maintenance option when applicable,
-  and prescribe a gradual return with a recalculated timeline.
-- Render one compact, complete `history/last-week.md` using canonical sections:
-  interval and report date, daily data, metrics, pain and mobility, athlete
-  notes, and coach analysis.
-- Preserve every original report datum. Map structured values to the nearest
-  canonical section and retain unknown or extra fields verbatim under `Note
-  atleta`; never discard, silently normalize or replace detail with a summary.
-- Update only the latest confirmed weight, strictly improved confirmed
-  benchmarks with their dates, `Last log`, `Plan week`, and flags made
-  necessary by explicit current facts in `profile.md`.
-- Keep next-week recommendations inside `Analisi coach` for later consumption
-  by `fitness-coach-plan`.
+- Compare planned/performed work, adherence, volume, RPE, performance, sleep,
+  stress, energy, pain, mobility, recovery and weight. A plateau requires at
+  least two comparable stagnant weeks.
+- For travel or an unplanned stop, assess duration/constraints and, when
+  applicable, recommend maintenance, gradual return and a recalculated timeline.
+- Publish one canonical `history/last-week.md`. Preserve every supplied datum:
+  map structured values to the nearest section and retain extra/unknown fields
+  verbatim under `Note atleta`; no loss, silent normalization or summary in
+  place of detail.
+- Update only confirmed current state allowed below. Keep W<N+1>
+  recommendations in `Analisi coach` for `fitness-coach-plan`.
 
 ## deny
 
-- Missing or malformed `profile.md` or `plan.md`, mismatched athlete/cycle
-  state, `Plan week: W0`, or a missing planned-session definition stops the
-  analysis with zero writes. List each exact conflict or missing field.
-- Report week must equal the profile's `Plan week`. Its start and end must be
-  valid dates in chronological order, cover the reported week, and its final
-  date must equal `Data report`. Contradictions or ambiguous dates stop with
-  zero writes.
-- Require every session prescribed for that week, including each skipped
-  session explicitly marked as skipped with its reason. For every performed
-  exercise require prescribed work, performed work and RPE. Require complete
-  recovery data for energy, sleep and stress; latest weight; pain status and
-  details when present; cool-down adherence, mobility trend and mobility
-  notes; and athlete notes or an explicit `nessuna`. List every missing item
-  before requesting corrections. Never fill gaps by inference.
-- W1 requires no existing `history/last-week.md`; any existing file is a
-  conflict. W2 and later require one valid previous `last-week.md` for exactly
-  W<N-1>, with a coherent final date. Missing, malformed or wrong-week history
-  stops with zero writes.
-- Never overwrite an existing weekly archive. A destination collision stops
-  before any write and reports its exact path.
-- Do not update weight from an estimate, benchmark from an unconfirmed or
-  incomparable test, or benchmark that did not strictly improve. Do not infer
-  goals, diagnoses, training type, skills or goal flags from weekly behavior.
-  Preserve every unrelated profile byte, including frontmatter and historical
-  profile text.
-- Do not modify `plan.md`, revise the mother plan, create JSON or HTML, create
-  reminders, schedule follow-ups or re-profile the athlete.
-- Do not diagnose medical conditions, prescribe drugs or steroids, or train
-  through unresolved warning signs. Acute pain, swelling, sudden strength
-  loss, persistent night pain, numbness or tingling requires a doctor or
-  physiotherapist recommendation and a prudent next-week reduction, pause or
-  non-aggravating alternative in `Analisi coach`.
-- Any validation, rendering, publication or verification error must leave the
-  original profile, plan and current report byte-for-byte unchanged and must
-  not remove a pre-existing file.
+- Any invalid input or state stops with zero writes and one exact combined list
+  of conflicts/missing fields. Never infer missing data.
+- Reject missing/malformed profile or plan, identity/cycle mismatch, W0,
+  missing planned-session definitions, report week unequal to `Plan week`, or
+  invalid/ambiguous dates. Interval dates must be chronological, cover the
+  reported week, and end on `Data report`.
+- Require every prescribed session, including explicit skipped status/reason;
+  every performed exercise's prescribed and performed sets/reps/holds/load plus
+  RPE; energy, sleep, stress, latest confirmed weight, pain status/details,
+  cool-down adherence, mobility trend/notes, and athlete notes or `nessuna`.
+- Never overwrite an archive or other existing destination. Never update weight
+  from estimates, benchmarks from unconfirmed/incomparable/non-improving tests,
+  or infer goals, diagnoses, training type, skills or goal flags.
+- Do not modify `plan.md`, revise the mother plan, create JSON/HTML/reminders,
+  schedule follow-ups or re-profile the athlete. Preserve profile frontmatter,
+  history, whitespace and every byte outside permitted field replacements.
+- Do not diagnose, prescribe drugs/steroids or train through unresolved warning
+  signs. Acute pain, swelling, sudden strength loss, persistent night pain,
+  numbness or tingling requires doctor/physiotherapist referral and prudent
+  reduction, pause or non-aggravating alternative in `Analisi coach`.
+- Any validation, rendering, publication or verification error must restore the
+  original profile, plan and current report byte-for-byte, remove only files
+  created by this transaction, and never remove a pre-existing file.
 
 ## procedure
 
-1. Read the selected profile and plan as specified in `load`; snapshot their
-   complete bytes in memory. Validate canonical identity and cycle metadata,
-   parse `Plan week: W<N>`, and derive the complete set of sessions prescribed
-   for W<N>. Inspect whether `history/last-week.md` exists and read it only if
-   present. Do not write during preflight.
+1. Validate profile/plan identity and cycle, parse N >= 1, and derive all
+   prescribed W<N> sessions. Apply the `load` history rule. No preflight writes.
 
-2. Validate the submitted report completely before analysis. Require:
+2. Validate the entire report against `deny`, planned names and prescriptions.
+   Preserve supplied extra fields. Report all problems together and stop.
 
-   - exact week W<N>, interval start, interval end and matching report date;
-   - one entry for every prescribed session, with skipped sessions explicit;
-   - for each performed exercise, prescribed sets/reps/holds/load, performed
-     sets/reps/holds/load and RPE;
-   - energy, sleep, stress, latest confirmed weight, pain status, mobility and
-     cool-down feedback, athlete notes and every supplied extra field.
+3. Validate history using this matrix:
 
-   Compare report entries to planned session names and prescriptions. If any
-   datum is absent, contradictory or ambiguous, output one precise combined
-   list of missing data and conflicts, request corrections, and stop with zero
-   filesystem writes.
+   | State | Required history | Archive destination | Publication |
+   |---|---|---|---|
+   | W1 | `last-week.md` absent; existence is a conflict, content is not read | none | create current report, replace profile |
+   | W2+ | one read of valid W<N-1>, with valid interval and final date equal to its `Data report` | `history/weeks/W<N-1>-<previous-final-date>.md`, derived only from previous content and absent | create byte-exact archive, replace current report and profile |
 
-3. Validate history state. For W1 require `last-week.md` to be absent. For W2+
-   parse the complete previous report and require heading week W<N-1>, valid
-   interval and a final date matching its `Data report`. Derive archive path
-   only from that previous report:
-   `Profiles/<Nome>/history/weeks/W<N-1>-<previous-final-date>.md`. Check that
-   exact destination does not exist. Never guess a week or date from the
-   filename, current report or profile.
+   Never derive archive metadata from filenames, the current report or profile.
 
-4. Analyze the valid data. Calculate adherence from planned versus completed
-   sessions and prescribed versus performed work; compare comparable weekly
-   volume, load, repetitions or hold time; inspect target versus actual RPE;
-   identify performance direction; and assess sleep, stress, energy, weight,
-   pain, mobility and recovery together. Use the previous week only for direct
-   comparisons. A plateau requires two or more comparable stagnant weeks;
-   before recommending change, identify whether adherence, sleep, nutrition
-   context, stress, recovery or programming evidence best explains it. Load
-   only references activated by the signals described in `load`.
+4. Analyze valid data: planned versus completed sessions/work; comparable
+   volume, load, reps or hold time; target versus actual RPE; performance and
+   recovery signals together. Use previous history only for direct comparison.
+   Before changing work for a qualifying plateau, consider adherence, sleep,
+   nutrition context, stress, recovery and programming evidence. Produce direct,
+   non-judgmental analysis for the recorded level, stating evidence,
+   uncertainties and contradictions. Add supported W<N+1> progression,
+   unchanged work, regression, recovery, deload, pain and interruption guidance;
+   this never authorizes a plan edit.
 
-5. Produce direct, non-judgmental coaching analysis appropriate to the
-   athlete's recorded level. State evidence, uncertainties and contradictions.
-   Put specific recommendations for W<N+1> in `Analisi coach`, including
-   progression, unchanged work, regression, recovery, deload or prudent pain
-   adaptation when supported. For travel or an unplanned stop, include an
-   adapted maintenance option when applicable, a gradual return after the
-   interruption and the resulting timeline change. Recommendations do not
-   authorize edits to `plan.md`.
-
-6. Render the new report in memory with exactly this structure, while retaining
-   every submitted value and original detail:
+5. Render in memory with exactly this structure, retaining every submitted
+   value, original detail, meaningful order and unit:
 
    ```markdown
    # Report settimana W<N> — <Nome>
@@ -169,66 +125,43 @@ state in `profile.md`. Never change the mother plan.
    [Evidence-based assessment, safety guidance and W<N+1> recommendations]
    ```
 
-   Preserve meaningful ordering and units. Mark explicitly reported unknown,
-   not applicable, skipped and absent-by-design values; never convert them to
-   invented values. Perform a field-by-field round trip against the input and
-   block publication if any source field is missing from the rendered report.
+   Keep explicitly reported unknown, not-applicable, skipped and
+   absent-by-design values; invent nothing. A field-by-field round trip must
+   prove every source field remains before publication.
 
-7. Build the updated profile in memory from its exact byte snapshot. Change
-   only:
+6. From the exact profile snapshot, require one unambiguous match and change
+   only: newer confirmed `Peso`; an existing comparable benchmark when a
+   confirmed result strictly improves it, preserving baseline and recording the
+   confirmed test date; `Last log` to report final date; `Plan week` from W<N>
+   to exactly W<N+1>; or a flag contradicted by an explicit confirmed current
+   fact, never an athlete goal. Do not reflow or normalize anything.
 
-   - the canonical `Peso` value when the report supplies a newer confirmed
-     measurement;
-   - an existing comparable benchmark only when a confirmed result is strictly
-     better, preserving its baseline and recording the actual test date (or
-     report final date when explicitly confirmed as the test date);
-   - `Last log` to the report final date;
-   - `Plan week` from W<N> to exactly W<N+1>;
-   - only a flag whose current value is contradicted by an explicit confirmed
-     current fact, without creating or changing an athlete goal.
+7. Immediately before persistence, use non-verbose byte comparisons (never
+   print already loaded content) to recheck profile, plan, history state and all
+   destinations against snapshots. Concurrent change or collision stops with
+   zero writes. In unique same-filesystem temporaries, stage the new report,
+   profile and exact snapshots; validate temporaries and round trip.
 
-   Do not rewrite sections, reflow Markdown, update frontmatter, normalize
-   whitespace or alter unrelated bytes. Require exactly one unambiguous match
-   for every changed field; otherwise stop with zero writes.
+8. Publish one rollback-protected logical transaction with atomic no-replace
+   creation for new destinations and atomic replacement otherwise, following
+   the matrix order. Verify the archive copy when applicable, complete report,
+   allowed profile-only changes, and byte-exact `plan.md` without emitting file
+   contents. On any error, atomically restore exact original profile and, for
+   W2+, `last-week.md`; remove only the transaction-created current report (W1)
+   or archive (W2+) and temporaries; verify restoration and report failure.
+   Never remove a pre-existing archive.
 
-8. Before persistence, re-read and byte-compare `profile.md`, `plan.md` and the
-   existing `last-week.md` state with their snapshots; recheck all destination
-   paths. Concurrent change or collision stops with zero writes. Create unique
-   same-filesystem transaction temporaries containing the validated new report,
-   updated profile and exact original snapshots. Validate all temporaries and
-   the report round trip before publication.
-
-9. Publish W1 as one rollback-protected logical transaction: atomically create
-   `history/last-week.md` with no-replace semantics, then atomically replace
-   `profile.md`, then verify both files and byte-compare `plan.md` to its
-   snapshot. On any error, atomically restore the exact original profile,
-   remove only `last-week.md` created by this transaction and transaction
-   temporaries, verify restoration and report failure.
-
-10. Publish W2+ as one rollback-protected logical transaction: first create the
-    immutable archive from an exact byte-for-byte copy of the previous
-    `last-week.md` using atomic no-replace publication; then atomically replace
-    `last-week.md`; then atomically replace `profile.md`. Verify archive
-    equality, complete new report, allowed profile-only changes and byte-exact
-    `plan.md`. On any error, atomically restore the exact original
-    `last-week.md` and `profile.md`, remove only the archive created by this
-    transaction plus transaction temporaries, verify all restoration and
-    report failure. Never remove a pre-existing archive.
-
-11. On success, remove transaction temporaries and output the coach analysis,
-    published report path, archive path when W2+, new `Last log`, and new
-    `Plan week`. Report that `plan.md` remained byte-for-byte unchanged.
+9. On success remove temporaries and output coach analysis, current report path,
+   archive path for W2+, new `Last log`, new `Plan week`, and confirmation that
+   `plan.md` remained byte-for-byte unchanged.
 
 ## done
 
-- One complete report matched the selected athlete, active plan week, dates
-  and every prescribed session before any write.
-- Saved report passed field-by-field round trip and contains all daily data,
-  metrics, pain/mobility feedback, athlete notes, extra fields and coach
-  analysis without lossy summarization.
-- W1 created only a new current report; W2+ also created one immutable,
-  byte-exact archive of W<N-1>. No existing destination was overwritten.
-- Profile changed only confirmed current state permitted by this skill, with
-  `Last log` equal to report final date and `Plan week: W<N+1>`.
-- Mother plan remained byte-for-byte unchanged. Success reported all paths and
-  new state; failure left prior state exact and no transaction-created files.
+- Validation and field-by-field round trip passed before writes; all sessions,
+  exercises, recovery, safety, mobility, notes and extra fields are present.
+- W1 created only current history; W2+ also archived exact W<N-1>; no existing
+  destination was overwritten.
+- Only permitted confirmed profile fields changed; `Last log` and W<N+1> are
+  correct; `plan.md` is byte-identical.
+- Success reports paths/state. Failure restores exact prior state and leaves no
+  transaction-created file.

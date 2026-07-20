@@ -128,12 +128,12 @@ class FitnessCoachR2ContractTests(unittest.TestCase):
     def test_analyze_contract_covers_complete_reports_w1_w2_archives_and_plan_protection(self):
         document = self.skills["analyze"]
         self.assert_contains_all(document, (
-            "Require every session prescribed for that week",
-            "Preserve every original report datum.",
-            "W1 requires no existing `history/last-week.md`",
-            "W2 and later require one valid previous `last-week.md`",
+            "Require every prescribed session",
+            "Preserve every supplied datum",
+            "W1 | `last-week.md` absent; existence is a conflict, content is not read",
+            "W2+ | one read of valid W<N-1>",
             "history/weeks/W<N-1>-<previous-final-date>.md",
-            "Never overwrite an existing weekly archive.",
+            "Never overwrite an archive",
             "Do not modify `plan.md`",
             "field-by-field round trip",
             "Plan week` from W<N> to exactly W<N+1>",
@@ -141,20 +141,52 @@ class FitnessCoachR2ContractTests(unittest.TestCase):
             "rollback-protected logical transaction",
         ))
 
+    def test_analyze_loads_history_and_references_conditionally_and_keeps_rollback(self):
+        document = self.skills["analyze"]
+        self.assert_contains_all(document, (
+            "For W1, stop on existence without reading its content; for W2+, read it exactly once.",
+            "Load `references/recovery-and-deload.md` only",
+            "`common-injuries.md` only",
+            "`mobility-and-flexibility.md` only",
+            "use non-verbose byte comparisons (never print already loaded content)",
+            "atomically restore exact original profile",
+            "Never remove a pre-existing archive.",
+        ))
+
+    def test_analyze_skill_stays_within_compactness_budget(self):
+        document = self.skills["analyze"]
+        self.assertLessEqual(len(document.encode("utf-8")), 8_871)
+        self.assertLessEqual(len(document.split()), 1_201)
+
     def test_plan_contract_covers_week_source_canonical_paths_json_html_and_rollback(self):
         document = self.skills["plan"]
         self.assert_contains_all(document, (
             "Derive N exclusively from the one exact `Plan week: W<N>` field",
+            "Read once, progressively",
+            "W2+ | required, report for exactly W<N-1>",
+            "complete `Analisi coach`",
+            "Unicode NFKC",
+            "first 12 hex characters of its SHA-256 digest",
             "Profiles/<Nome>/artifacts/week-W<N>.json",
             "Profiles/<Nome>/artifacts/week-W<N>.html",
             "JSON as canonical",
             "HTML only when explicitly requested",
+            "Path.resolve()",
+            "candidate.is_relative_to(artifacts.resolve())",
+            "flush and `fsync`",
             "python3 scripts/generate_week_plan.py <temp-json>",
             "python3 scripts/generate_week_plan.py <temp-json> --output <temp-html>",
-            "rollback-protected logical transaction",
+            "rollback-protected logical transaction with `os.replace`",
             "restore every pre-existing canonical artifact",
+            "restore prior absence",
+            "In `finally`",
             "leave no transaction temporary",
         ))
+
+    def test_plan_skill_stays_within_compactness_budget(self):
+        document = self.skills["plan"]
+        self.assertLessEqual(len(document.encode("utf-8")), 6_000)
+        self.assertLessEqual(len(document.split()), 800)
 
     def test_anonymous_fixtures_cover_canonical_w0_w1_w2_states(self):
         profiles = {
