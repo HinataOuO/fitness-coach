@@ -18,10 +18,11 @@ JSON as canonical; publish HTML only when explicitly requested.
   normalize, infer, enumerate or change it.
 - Read once, progressively: `Profiles/<Nome>/profile.md`; after a valid week,
   `plan.md`; then `history/last-week.md` only when the matrix requires it. Retain
-  inputs for later silent comparison; never print them.
-- Read canonicals only immediately before publication. Snapshot via filesystem
-  copies; use silent metadata, hashes or byte comparisons for all checks.
-- Never read another profile, archive, reference, schema, template or
+  inputs for silent comparison; never print them.
+- After all athlete data passes validation, read once `assets/week-plan.schema.json`
+  and `assets/week-plan.example.json`, immediately before building JSON.
+- Read existing canonicals only immediately before publication and snapshot them
+  byte-exactly. Never read another profile, archive, reference, template or
   non-canonical artifact.
 
 ## scope
@@ -34,14 +35,16 @@ JSON as canonical; publish HTML only when explicitly requested.
   changed prescription; preserve every other mother-plan value.
 - Publish only `Profiles/<Nome>/artifacts/week-W<N>.json` and
   `Profiles/<Nome>/artifacts/week-W<N>.html`. Treat JSON as canonical.
-- Preserve the legacy deterministic ID algorithm. Normalize every key with
-  Unicode NFKC, compress spaces, lowercase, UTF-8 encode, then append the first
-  12 hex characters of its SHA-256 digest to a readable prefix. Keys are
-  plan=`<athlete-slug>|<plan-identity>`, session=`<plan-id>|<day>|<session-name>`,
-  exercise=`<session-id>|<zero-based-position>|<exercise-name>`. For the athlete
-  slug use Unicode NFKD, lowercase ASCII alphanumerics, one `-` per
-  non-alphanumeric sequence, discard non-transliterable non-ASCII letters,
-  compress/trim hyphens, and reject an empty slug.
+- Preserve deterministic IDs. `plan-identity` is the cycle's exact `cycle_start`
+  (`YYYY-MM-DD`). Keys are plan=`<athlete-slug>|<cycle_start>`,
+  session=`<plan-id>|<day>|<session-name>`, exercise=`<session-id>|<zero-based-position>|<exercise-name>`.
+  NFKC-normalize each key, compress spaces, lowercase, UTF-8 encode, then append
+  its SHA-256 first 12 hex characters. Prefixes are `plan-<athlete-slug>`,
+  `session-<session-name-slug>`, `exercise-<exercise-name-slug>`. Build every slug
+  by NFKD, lowercase ASCII alphanumerics, one `-` per non-alphanumeric sequence,
+  discard non-transliterable non-ASCII letters, compress/trim hyphens; reject
+  empty. Position is zero-based. Example: key `atleta-esempio|2026-07-01` gives
+  hash `21e78f192ba9` and ID `plan-atleta-esempio-21e78f192ba9`.
 
 ## deny
 
@@ -67,11 +70,15 @@ JSON as canonical; publish HTML only when explicitly requested.
    | W1 | read only if it exists | only if canonical heading, coherent interval, matching final `Data report`, and explicit W1 adaptations are all present; otherwise ignore |
    | W2+ | required, report for exactly W<N-1> | require those structural checks; use only explicit W<N> adaptations |
 
-2. Build complete JSON in memory. Resolve `artifacts/`, both canonicals and every
-   future temporary with `Path.resolve()`; before writing require every candidate
-   to satisfy `candidate.is_relative_to(artifacts.resolve())`. Re-read each
-   consumed input once and compare silently with its retained snapshot. Any
-   change or path failure stops with zero writes.
+2. Using the loaded schema and example, build JSON in memory in logical order:
+   metadata, sessions, exercises. Map session minutes to numeric-string
+   `duration`; the complete prescription to `prescribed`; exercise mode to
+   `reps`, `time`, `dist` or `mobility`; timed recovery to the same complete
+   value in `rest` and `restLabel`. Omit both when no recovery exists. No extra
+   fields, placeholders or invented values. Compare JSON with schema and example.
+   Resolve paths with `Path.resolve()`; require
+   `candidate.is_relative_to(artifacts.resolve())`. Re-read consumed athlete
+   inputs and compare snapshots; any change or path failure stops with zero writes.
 
 3. Create unique transaction files exclusively inside `artifacts/`. Serialize
    only JSON manually as UTF-8; flush and `fsync` before validation. Validate

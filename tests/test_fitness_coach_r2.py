@@ -10,7 +10,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "fitness-coach-r2"
-WEEK_PLAN = ROOT / "tests" / "fixtures" / "week-plan" / "complete.json"
+WEEK_PLAN = ROOT / "assets" / "week-plan.example.json"
 GENERATOR = ROOT / "scripts" / "generate_week_plan.py"
 REQUIRED_SECTIONS = ("purpose", "load", "scope", "deny", "procedure", "done")
 SKILLS = {
@@ -165,8 +165,19 @@ class FitnessCoachR2ContractTests(unittest.TestCase):
             "Read once, progressively",
             "W2+ | required, report for exactly W<N-1>",
             "complete `Analisi coach`",
-            "Unicode NFKC",
-            "first 12 hex characters of its SHA-256 digest",
+            "read once `assets/week-plan.schema.json` and `assets/week-plan.example.json`",
+            "plan-identity` is the cycle's exact `cycle_start`",
+            "NFKC-normalize each key",
+            "SHA-256 first 12 hex characters",
+            "Position is zero-based",
+            "key `atleta-esempio|2026-07-01` gives hash `21e78f192ba9`",
+            "numeric-string `duration`",
+            "complete prescription to `prescribed`",
+            "`reps`, `time`, `dist` or `mobility`",
+            "same complete value in `rest` and `restLabel`",
+            "Omit both when no recovery exists",
+            "No extra fields, placeholders or invented values",
+            "Compare JSON with schema and example",
             "Profiles/<Nome>/artifacts/week-W<N>.json",
             "Profiles/<Nome>/artifacts/week-W<N>.html",
             "JSON as canonical",
@@ -185,8 +196,8 @@ class FitnessCoachR2ContractTests(unittest.TestCase):
 
     def test_plan_skill_stays_within_compactness_budget(self):
         document = self.skills["plan"]
-        self.assertLessEqual(len(document.encode("utf-8")), 6_000)
-        self.assertLessEqual(len(document.split()), 800)
+        self.assertLessEqual(len(document.encode("utf-8")), 6_700)
+        self.assertLessEqual(len(document.split()), 850)
 
     def test_anonymous_fixtures_cover_canonical_w0_w1_w2_states(self):
         profiles = {

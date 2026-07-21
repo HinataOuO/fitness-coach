@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import tempfile
 from typing import Any
@@ -122,6 +123,20 @@ def validate_unique_ids(plan: dict[str, Any]) -> None:
             exercise_ids.add(exercise_id)
 
 
+def validate_rest_labels(plan: dict[str, Any]) -> None:
+    duration = re.compile(r"\d+(?:\s*[–-]\s*\d+)?\s*(?:s|min)\b")
+    for session_index, session in enumerate(plan["sessions"]):
+        for exercise_index, exercise in enumerate(session["exercises"]):
+            rest = exercise.get("rest", "")
+            label = exercise.get("restLabel", "")
+            if rest and not (duration.search(rest) and duration.search(label)):
+                raise GenerationError(
+                    "violazione applicativa in "
+                    f"$.sessions[{session_index}].exercises[{exercise_index}]: "
+                    "rest e restLabel devono entrambi contenere la durata"
+                )
+
+
 def render(plan: Any, schema: Any, template: str) -> str:
     if not isinstance(schema, dict):
         raise GenerationError("schema non valido: radice non object")
@@ -132,6 +147,7 @@ def render(plan: Any, schema: Any, template: str) -> str:
         )
     validate(plan, schema)
     validate_unique_ids(plan)
+    validate_rest_labels(plan)
 
     marker_count = template.count(MARKER)
     if marker_count != 1:
@@ -179,6 +195,7 @@ def generate(plan_path: Path, output_path: Path | None = None) -> None:
         )
     validate(plan, schema)
     validate_unique_ids(plan)
+    validate_rest_labels(plan)
     if output_path is None:
         return
     try:

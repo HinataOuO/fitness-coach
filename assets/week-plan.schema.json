@@ -44,7 +44,7 @@
           "id": { "type": "string", "minLength": 1 },
           "name": { "type": "string", "minLength": 1 },
           "day": { "type": "string", "minLength": 1 },
-          "duration": { "type": "string", "minLength": 1 },
+          "duration": { "type": "string", "minLength": 1, "description": "Durata della sessione in minuti, come stringa numerica senza unità." },
           "exercises": {
             "type": "array",
             "items": {
@@ -54,10 +54,10 @@
               "properties": {
                 "id": { "type": "string", "minLength": 1 },
                 "name": { "type": "string", "minLength": 1 },
-                "prescribed": { "type": "string", "minLength": 1 },
-                "type": { "enum": ["reps", "time", "dist", "mobility"] },
-                "rest": { "type": "string" },
-                "restLabel": { "type": "string" }
+                "prescribed": { "type": "string", "minLength": 1, "description": "Prescrizione completa pronta per l'atleta, incluse serie, quantità, unità e vincoli." },
+                "type": { "enum": ["reps", "time", "dist", "mobility"], "description": "Modalità principale: ripetizioni, tempo, distanza o mobilità." },
+                "rest": { "type": "string", "description": "Recupero temporizzato completo; se presente coincide con restLabel." },
+                "restLabel": { "type": "string", "description": "Etichetta del recupero temporizzato; se presente coincide con rest." }
               }
             }
           }

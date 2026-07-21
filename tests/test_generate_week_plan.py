@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -6,11 +7,12 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unicodedata
 from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FIXTURE = ROOT / "tests" / "fixtures" / "week-plan" / "complete.json"
+FIXTURE = ROOT / "assets" / "week-plan.example.json"
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import generate_week_plan as generator
@@ -44,6 +46,25 @@ class GenerateWeekPlanTests(unittest.TestCase):
         self.assertEqual(types, {"reps", "time", "dist", "mobility"})
         self.assertNotIn(generator.MARKER, html)
 
+    def test_canonical_example_uses_standard_rest_and_deterministic_ids(self):
+        exercises = self.plan["sessions"][0]["exercises"]
+        self.assertTrue(all(item["rest"] == item["restLabel"] for item in exercises[:3]))
+        self.assertNotIn("rest", exercises[3])
+        self.assertNotIn("restLabel", exercises[3])
+
+        def digest(key):
+            key = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", key)).strip().lower()
+            return hashlib.sha256(key.encode("utf-8")).hexdigest()[:12]
+
+        plan_id = f"plan-atleta-esempio-{digest('atleta-esempio|2026-07-01')}"
+        session_id = f"session-full-body-{digest(f'{plan_id}|Lunedì|Full body')}"
+        self.assertEqual(self.plan["plan"]["id"], plan_id)
+        self.assertEqual(self.plan["sessions"][0]["id"], session_id)
+        prefixes = ("exercise-trazioni", "exercise-plank", "exercise-farmer-walk", "exercise-mobilita-spalle")
+        for position, (exercise, prefix) in enumerate(zip(exercises, prefixes)):
+            key = f'{session_id}|{position}|{exercise["name"]}'
+            self.assertEqual(exercise["id"], f"{prefix}-{digest(key)}")
+
     def test_missing_required_field_is_rejected(self):
         plan = copy.deepcopy(self.plan)
         del plan["athlete"]
@@ -65,6 +86,12 @@ class GenerateWeekPlanTests(unittest.TestCase):
                 plan = copy.deepcopy(self.plan)
                 plan["sessions"][0]["exercises"][0]["type"] = invalid_type
                 self.assert_rejected(plan)
+
+    def test_rest_label_without_duration_is_rejected(self):
+        plan = copy.deepcopy(self.plan)
+        exercise = plan["sessions"][0]["exercises"][0]
+        exercise["rest"], exercise["restLabel"] = "120 s", "Recupero"
+        self.assert_rejected(plan)
 
     def test_template_marker_must_occur_exactly_once(self):
         for template in ("<html></html>", generator.MARKER * 2):
